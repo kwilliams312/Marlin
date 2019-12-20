@@ -813,7 +813,7 @@ void Endstops::update() {
       #if HAS_Z_MAX || (Z_SPI_SENSORLESS && Z_HOME_DIR > 0)
         #if ENABLED(Z_QUAD_ENDSTOPS)
           PROCESS_TRIPLE_ENDSTOP(Z, Z2, Z3, Z4, MAX);
-        #if ENABLED(Z_TRIPLE_ENDSTOPS)
+        #elif ENABLED(Z_TRIPLE_ENDSTOPS)
           PROCESS_TRIPLE_ENDSTOP(Z, Z2, Z3, MAX);
         #elif ENABLED(Z_DUAL_ENDSTOPS)
           PROCESS_DUAL_ENDSTOP(Z, Z2, MAX);
