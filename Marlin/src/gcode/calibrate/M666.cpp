@@ -57,7 +57,7 @@
    * M666: Set Dual Endstops offsets for X, Y, and/or Z.
    *       With no parameters report current offsets.
    *
-   * For Triple Z Endstops:
+   * For Triple / Quad Z Endstops:
    *   Set Z2 Only: M666 S2 Z<offset>
    *   Set Z3 Only: M666 S3 Z<offset>
    *   Set Z4 Only: M666 S4 Z<offset>
