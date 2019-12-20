@@ -2461,7 +2461,6 @@ void MarlinSettings::reset() {
           0
         #endif
       );
-    #endif
     #elif ENABLED(Z_QUAD_ENDSTOPS)
       endstops.z2_endstop_adj = (
         #ifdef Z_QUAD_ENDSTOPS_ADJUSTMENT2
