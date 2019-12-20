@@ -2128,7 +2128,6 @@
   #define Z2_HYBRID_THRESHOLD      3
   #define Z3_HYBRID_THRESHOLD      3
   #define Z4_HYBRID_THRESHOLD      3
-  #define Z4_HYBRID_THRESHOLD      3
   #define E0_HYBRID_THRESHOLD     30
   #define E1_HYBRID_THRESHOLD     30
   #define E2_HYBRID_THRESHOLD     30
@@ -2346,7 +2345,7 @@
    *         I not present or I0 or I1 - X, Y, Z or E0
    *         I2 - X2, Y2, Z2 or E1
    *         I3 - Z3 or E3
-   *         I4 - E4
+   *         I4 - Z4 or E4
    *         I5 - E5
    * M916 - Increase drive level until get thermal warning
    * M917 - Find minimum current thresholds
