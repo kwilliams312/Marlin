@@ -98,6 +98,16 @@
 #else
   #define MATCH_Z3_MIN_EILINE(P) false
 #endif
+#if HAS_Z4_MAX
+  #define MATCH_Z4_MAX_EILINE(P) MATCH_EILINE(P, Z4_MAX_PIN)
+#else
+  #define MATCH_Z4_MAX_EILINE(P) false
+#endif
+#if HAS_Z4_MIN
+  #define MATCH_Z4_MIN_EILINE(P) MATCH_EILINE(P, Z4_MIN_PIN)
+#else
+  #define MATCH_Z4_MIN_EILINE(P) false
+#endif
 #if HAS_Z_MIN_PROBE_PIN
   #define MATCH_Z_MIN_PROBE_EILINE(P)   MATCH_EILINE(P, Z_MIN_PROBE_PIN)
 #else
@@ -109,6 +119,7 @@
                                  && !MATCH_Z_MAX_EILINE(P) && !MATCH_Z_MIN_EILINE(P)    \
                                  && !MATCH_Z2_MAX_EILINE(P) && !MATCH_Z2_MIN_EILINE(P)  \
                                  && !MATCH_Z3_MAX_EILINE(P) && !MATCH_Z3_MIN_EILINE(P)  \
+                                 && !MATCH_Z4_MAX_EILINE(P) && !MATCH_Z4_MIN_EILINE(P)  \
                                  && !MATCH_Z_MIN_PROBE_EILINE(P))
 
 // One ISR for all EXT-Interrupts
@@ -174,6 +185,18 @@ void setup_endstop_interrupts() {
       static_assert(false, "Z3_MIN_PIN has no EXTINT line available.");
     #endif
     attachInterrupt(Z3_MIN_PIN, endstop_ISR, CHANGE);
+  #endif
+  #if HAS_Z4_MAX
+    #if !AVAILABLE_EILINE(Z4_MAX_PIN)
+      static_assert(false, "Z4_MAX_PIN has no EXTINT line available.");
+    #endif
+    attachInterrupt(Z4_MAX_PIN, endstop_ISR, CHANGE);
+  #endif
+  #if HAS_Z4_MIN
+    #if !AVAILABLE_EILINE(Z4_MIN_PIN)
+      static_assert(false, "Z4_MIN_PIN has no EXTINT line available.");
+    #endif
+    attachInterrupt(Z4_MIN_PIN, endstop_ISR, CHANGE);
   #endif
   #if HAS_Z_MIN_PROBE_PIN
     #if !AVAILABLE_EILINE(Z_MIN_PROBE_PIN)

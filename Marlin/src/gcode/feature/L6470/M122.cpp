@@ -89,6 +89,9 @@ void GcodeSuite::M122() {
   #if AXIS_DRIVER_TYPE_Z3(L6470)
     L6470_SAY_STATUS(Z3);
   #endif
+  #if AXIS_DRIVER_TYPE_Z4(L6470)
+    L6470_SAY_STATUS(Z4);
+  #endif
   #if AXIS_DRIVER_TYPE_E0(L6470)
     L6470_SAY_STATUS(E0);
   #endif

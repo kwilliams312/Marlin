@@ -37,6 +37,7 @@
 #define TMC_Y2_LABEL 'Y', '2'
 #define TMC_Z2_LABEL 'Z', '2'
 #define TMC_Z3_LABEL 'Z', '3'
+#define TMC_Z4_LABEL 'Z', '4'
 
 #define TMC_E0_LABEL 'E', '0'
 #define TMC_E1_LABEL 'E', '1'
@@ -366,7 +367,7 @@ void test_tmc_connection(const bool test_x, const bool test_y, const bool test_z
 #if USE_SENSORLESS
 
   // Track enabled status of stealthChop and only re-enable where applicable
-  struct sensorless_t { bool x, y, z, x2, y2, z2, z3; };
+  struct sensorless_t { bool x, y, z, x2, y2, z2, z3, z4; };
 
   #if ENABLED(IMPROVE_HOMING_RELIABILITY)
     extern millis_t sg_guard_period;

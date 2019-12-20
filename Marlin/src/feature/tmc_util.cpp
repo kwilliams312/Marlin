@@ -382,6 +382,9 @@
           #if AXIS_IS_TMC(Z3)
             step_current_down(stepperZ3);
           #endif
+          #if AXIS_IS_TMC(Z4)
+            step_current_down(stepperZ4);
+          #endif
         }
       #endif
       #if AXIS_IS_TMC(Z2)
@@ -392,6 +395,9 @@
           #if AXIS_IS_TMC(Z3)
             step_current_down(stepperZ3);
           #endif
+          #if AXIS_IS_TMC(Z4)
+            step_current_down(stepperZ4);
+          #endif
         }
       #endif
       #if AXIS_IS_TMC(Z3)
@@ -401,6 +407,22 @@
           #endif
           #if AXIS_IS_TMC(Z2)
             step_current_down(stepperZ2);
+          #endif
+          #if AXIS_IS_TMC(Z4)
+            step_current_down(stepperZ4);
+          #endif
+        }
+      #endif
+      #if AXIS_IS_TMC(Z4)
+        if (monitor_tmc_driver(stepperZ4, need_update_error_counters, need_debug_reporting)) {
+          #if AXIS_IS_TMC(Z)
+            step_current_down(stepperZ);
+          #endif
+          #if AXIS_IS_TMC(Z2)
+            step_current_down(stepperZ2);
+          #endif
+          #if AXIS_IS_TMC(Z3)
+            step_current_down(stepperZ3);
           #endif
         }
       #endif
@@ -741,6 +763,9 @@
       #if AXIS_IS_TMC(Z3)
         tmc_status(stepperZ3, i);
       #endif
+      #if AXIS_IS_TMC(Z4)
+        tmc_status(stepperZ4, i);
+      #endif
     }
 
     if (print_e) {
@@ -795,6 +820,9 @@
       #endif
       #if AXIS_IS_TMC(Z3)
         tmc_parse_drv_status(stepperZ3, i);
+      #endif
+      #if AXIS_IS_TMC(Z4)
+        tmc_parse_drv_status(stepperZ4, i);
       #endif
     }
 
@@ -971,6 +999,9 @@
       #if AXIS_IS_TMC(Z3)
         tmc_get_registers(stepperZ3, i);
       #endif
+      #if AXIS_IS_TMC(Z4)
+        tmc_get_registers(stepperZ4, i);
+      #endif
     }
 
     if (print_e) {
@@ -1077,6 +1108,9 @@
     #if AXIS_HAS_SPI(Z3)
       SET_CS_PIN(Z3);
     #endif
+    #if AXIS_HAS_SPI(Z4)
+      SET_CS_PIN(Z4);
+    #endif
     #if AXIS_HAS_SPI(E0)
       SET_CS_PIN(E0);
     #endif
@@ -1150,6 +1184,9 @@ void test_tmc_connection(const bool test_x, const bool test_y, const bool test_z
     #endif
     #if AXIS_IS_TMC(Z3)
       axis_connection += test_connection(stepperZ3);
+    #endif
+    #if AXIS_IS_TMC(Z4)
+      axis_connection += test_connection(stepperZ4);
     #endif
   }
 

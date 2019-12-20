@@ -449,7 +449,7 @@
   #define _Z2_PINS
 #endif
 
-#if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+#if ANY(Z_TRIPLE_STEPPER_DRIVERS, Z_QUAD_STEPPER_DRIVERS)
   #if PIN_EXISTS(Z3_CS) && AXIS_HAS_SPI(Z3)
     #define _Z3_CS Z3_CS_PIN,
   #else
@@ -473,6 +473,32 @@
   #define _Z3_PINS Z3_STEP_PIN, Z3_DIR_PIN, Z3_ENABLE_PIN, _Z3_CS _Z3_MS1 _Z3_MS2 _Z3_MS3
 #else
   #define _Z3_PINS
+#endif
+
+#if ENABLED(Z_QUAD_STEPPER_DRIVERS)
+  #if PIN_EXISTS(Z4_CS) && AXIS_HAS_SPI(Z4)
+    #define _Z4_CS Z4_CS_PIN,
+  #else
+    #define _Z4_CS
+  #endif
+  #if PIN_EXISTS(Z4_MS1)
+    #define _Z4_MS1 Z4_MS1_PIN,
+  #else
+    #define _Z4_MS1
+  #endif
+  #if PIN_EXISTS(Z4_MS2)
+    #define _Z4_MS2 Z4_MS2_PIN,
+  #else
+    #define _Z4_MS2
+  #endif
+  #if PIN_EXISTS(Z4_MS3)
+    #define _Z4_MS3 Z4_MS3_PIN,
+  #else
+    #define _Z4_MS3
+  #endif
+  #define _Z4_PINS Z4_STEP_PIN, Z4_DIR_PIN, Z4_ENABLE_PIN, _Z4_CS _Z4_MS1 _Z4_MS2 _Z4_MS3
+#else
+  #define _Z4_PINS
 #endif
 
 //

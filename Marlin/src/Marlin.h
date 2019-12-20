@@ -139,8 +139,20 @@ void manage_inactivity(const bool ignore_stepper_queue=false);
   #define Z3_disable() NOOP
 #endif
 
-#define  enable_Z() do{ Z_enable(); Z2_enable(); Z3_enable(); }while(0)
-#define disable_Z() do{ Z_disable(); Z2_disable(); Z3_disable(); CBI(axis_known_position, Z_AXIS); }while(0)
+#if AXIS_DRIVER_TYPE_Z4(L6470)
+  extern L6470 stepperZ4;
+  #define Z4_enable()  NOOP
+  #define Z4_disable() stepperZ4.free()
+#elif HAS_Z4_ENABLE
+  #define Z4_enable()  Z4_ENABLE_WRITE( Z_ENABLE_ON)
+  #define Z4_disable() Z4_ENABLE_WRITE(!Z_ENABLE_ON)
+#else
+  #define Z4_enable()  NOOP
+  #define Z4_disable() NOOP
+#endif
+
+#define  enable_Z() do{ Z_enable(); Z2_enable(); Z3_enable(); Z4_enable();}while(0)
+#define disable_Z() do{ Z_disable(); Z2_disable(); Z3_disable(); Z4_disable(); CBI(axis_known_position, Z_AXIS); }while(0)
 
 //
 // Extruder Stepper enable / disable

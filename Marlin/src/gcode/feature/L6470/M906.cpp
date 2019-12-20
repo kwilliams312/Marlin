@@ -42,7 +42,7 @@
  *     1 - monitor only X, Y, Z or E1
  *     2 - monitor only X2, Y2, Z2 or E2
  *     3 - monitor only Z3 or E3
- *     4 - monitor only E4
+ *     4 - monitor only Z4 or E4
  *     5 - monitor only E5
  * Xxxx, Yxxx, Zxxx, Exxx - axis to be monitored with displacement
  *     xxx (1-255) is distance moved on either side of current position
@@ -203,6 +203,9 @@ void GcodeSuite::M906() {
         #if AXIS_DRIVER_TYPE_Z3(L6470)
           if (index == 2) L6470_SET_KVAL_HOLD(Z3);
         #endif
+        #if AXIS_DRIVER_TYPE_Z4(L6470)
+          if (index == 3) L6470_SET_KVAL_HOLD(Z4);
+        #endif
         break;
       case E_AXIS: {
         const int8_t target_extruder = get_target_extruder_from_command();
@@ -256,6 +259,9 @@ void GcodeSuite::M906() {
     #endif
     #if AXIS_DRIVER_TYPE_Z3(L6470)
       L6470_REPORT_CURRENT(Z3);
+    #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+      L6470_REPORT_CURRENT(Z4);
     #endif
     #if AXIS_DRIVER_TYPE_E0(L6470)
       L6470_REPORT_CURRENT(E0);
