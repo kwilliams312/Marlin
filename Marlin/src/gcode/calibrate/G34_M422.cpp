@@ -65,7 +65,9 @@ constexpr xy_pos_t test_z_stepper_align_xy[] = Z_STEPPER_ALIGN_XY;
 #else
 
   static_assert(COUNT(test_z_stepper_align_xy) == Z_STEPPER_COUNT,
-    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+    #if ENABLED(Z_QUAD_STEPPER_DRIVERS)
+      "Z_STEPPER_ALIGN_XY requires four {X,Y} entries (Z, Z2, Z3 and Z4)."
+    #elif ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
       "Z_STEPPER_ALIGN_XY requires three {X,Y} entries (Z, Z2, and Z3)."
     #else
       "Z_STEPPER_ALIGN_XY requires two {X,Y} entries (Z and Z2)."
@@ -87,6 +89,8 @@ static_assert(LTEST(1) && RTEST(1), "The 2nd Z_STEPPER_ALIGN_XY X is unreachable
 static_assert(FTEST(1) && BTEST(1), "The 2nd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
 static_assert(LTEST(2) && RTEST(2), "The 3rd Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
 static_assert(FTEST(2) && BTEST(2), "The 3rd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
+static_assert(LTEST(3) && RTEST(3), "The 4th Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
+static_assert(FTEST(3) && BTEST(3), "The 4th Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
 
 //
 // G34 / M422 shared data
@@ -102,8 +106,11 @@ static xy_pos_t z_stepper_align_pos[] = Z_STEPPER_ALIGN_XY;
 inline void set_all_z_lock(const bool lock) {
   stepper.set_z_lock(lock);
   stepper.set_z2_lock(lock);
-  #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+  #if ANY(Z_TRIPLE_STEPPER_DRIVERS, Z_QUAD_STEPPER_DRIVERS)
     stepper.set_z3_lock(lock);
+  #endif
+  #if ENABLED(Z_QUAD_STEPPER_DRIVERS)
+    stepper.set_z4_lock(lock);
   #endif
 }
 

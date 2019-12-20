@@ -60,6 +60,7 @@
    * For Triple Z Endstops:
    *   Set Z2 Only: M666 S2 Z<offset>
    *   Set Z3 Only: M666 S3 Z<offset>
+   *   Set Z4 Only: M666 S4 Z<offset>
    *      Set Both: M666 Z<offset>
    */
   void GcodeSuite::M666() {
@@ -69,7 +70,15 @@
     #if ENABLED(Y_DUAL_ENDSTOPS)
       if (parser.seenval('Y')) endstops.y2_endstop_adj = parser.value_linear_units();
     #endif
-    #if ENABLED(Z_TRIPLE_ENDSTOPS)
+    #if ENABLED(Z_QUAD_ENDSTOPS)
+      if (parser.seenval('Z')) {
+        const float z_adj = parser.value_linear_units();
+        const int ind = parser.intval('S');
+        if (!ind || ind == 2) endstops.z2_endstop_adj = z_adj;
+        if (!ind || ind == 3) endstops.z3_endstop_adj = z_adj;
+        if (!ind || ind == 4) endstops.z4_endstop_adj = z_adj;
+      }
+    #elif ENABLED(Z_TRIPLE_ENDSTOPS)
       if (parser.seenval('Z')) {
         const float z_adj = parser.value_linear_units();
         const int ind = parser.intval('S');
@@ -90,8 +99,11 @@
       #if Z_MULTI_ENDSTOPS
         SERIAL_ECHOPAIR(" Z2:", endstops.z2_endstop_adj);
       #endif
-      #if ENABLED(Z_TRIPLE_ENDSTOPS)
+      #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
         SERIAL_ECHOPAIR(" Z3:", endstops.z3_endstop_adj);
+      #endif
+      #if ENABLED(Z_QUAD_ENDSTOPS)
+        SERIAL_ECHOPAIR(" Z4:", endstops.z4_endstop_adj);
       #endif
       SERIAL_EOL();
     }

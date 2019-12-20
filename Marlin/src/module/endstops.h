@@ -34,7 +34,8 @@ enum EndstopEnum : char {
   X2_MIN, X2_MAX,
   Y2_MIN, Y2_MAX,
   Z2_MIN, Z2_MAX,
-  Z3_MIN, Z3_MAX
+  Z3_MIN, Z3_MAX,
+  Z4_MIN, Z4_MAX
 };
 
 class Endstops {
@@ -50,7 +51,10 @@ class Endstops {
       #if Z_MULTI_ENDSTOPS
         static float z2_endstop_adj;
       #endif
-      #if ENABLED(Z_TRIPLE_ENDSTOPS)
+      #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
+        static float z3_endstop_adj;
+      #endif
+      #if ENABLED(Z_QUAD_ENDSTOPS)
         static float z3_endstop_adj;
       #endif
     #else

@@ -104,6 +104,18 @@ void setup_endstop_interrupts() {
     #endif
     _ATTACH(Z3_MIN_PIN);
   #endif
+  #if HAS_Z4_MAX
+    #if !LPC1768_PIN_INTERRUPT_M(Z4_MIN_PIN)
+      #error "Z4_MIN_PIN is not INTERRUPT-capable."
+    #endif
+    _ATTACH(Z4_MAX_PIN);
+  #endif
+  #if HAS_Z4_MIN
+    #if !LPC1768_PIN_INTERRUPT_M(Z4_MIN_PIN)
+      #error "Z4_MIN_PIN is not INTERRUPT-capable."
+    #endif
+    _ATTACH(Z4_MIN_PIN);
+  #endif
   #if HAS_Z_MIN_PROBE_PIN
     #if !LPC1768_PIN_INTERRUPT_M(Z_MIN_PROBE_PIN)
       #error "Z_MIN_PROBE_PIN is not INTERRUPT-capable."

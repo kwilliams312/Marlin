@@ -517,14 +517,14 @@
   #error "X_DUAL_STEPPER_DRIVERS requires X2 pins (and an extra E plug)."
 #elif ENABLED(Y_DUAL_STEPPER_DRIVERS) && !(HAS_Y2_ENABLE && HAS_Y2_STEP && HAS_Y2_DIR)
   #error "Y_DUAL_STEPPER_DRIVERS requires Y2 pins (and an extra E plug)."
-#elif ENABLED(Z_DUAL_STEPPER_DRIVERS)
-  #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-    #error "Please select either Z_TRIPLE_STEPPER_DRIVERS or Z_DUAL_STEPPER_DRIVERS, not both."
-  #elif !(HAS_Z2_ENABLE && HAS_Z2_STEP && HAS_Z2_DIR)
-    #error "Z_DUAL_STEPPER_DRIVERS requires Z2 pins (and an extra E plug)."
-  #endif
+#elif BOTH(Z_TRIPLE_STEPPER_DRIVERS, Z_QUAD_STEPPER_DRIVERS) || BOTH(Z_DUAL_STEPPER_DRIVERS, Z_QUAD_STEPPER_DRIVERS) || BOTH(Z_DUAL_STEPPER_DRIVERS, Z_TRIPLE_STEPPER_DRIVERS)
+  #error "Please select only one Z_QUAD_STEPPER_DRIVERS, Z_TRIPLE_STEPPER_DRIVERS, or Z_DUAL_STEPPER_DRIVERS."
+#elif ENABLED(Z_DUAL_STEPPER_DRIVERS) && !(HAS_Z2_ENABLE && HAS_Z2_STEP && HAS_Z2_DIR)
+  #error "Z_DUAL_STEPPER_DRIVERS requires Z2 pins (and an extra E plug)."
 #elif ENABLED(Z_TRIPLE_STEPPER_DRIVERS) && !(HAS_Z2_ENABLE && HAS_Z2_STEP && HAS_Z2_DIR && HAS_Z3_ENABLE && HAS_Z3_STEP && HAS_Z3_DIR)
-  #error "Z_TRIPLE_STEPPER_DRIVERS requires Z3 pins (and two extra E plugs)."
+  #error "Z_TRIPLE_STEPPER_DRIVERS requires Z2 & Z3 pins (and two extra E plugs)."
+#elif ENABLED(Z_QUAD_STEPPER_DRIVERS) && !(HAS_Z2_ENABLE && HAS_Z2_STEP && HAS_Z2_DIR && HAS_Z3_ENABLE && HAS_Z3_STEP && HAS_Z3_DIR && HAS_Z4_ENABLE && HAS_Z4_STEP && HAS_Z4_DIR)
+  #error "Z_QUAD_STEPPER_DRIVERS requires Z2, Z3, Z4 pins (and three extra E plugs)."
 #endif
 
 /**

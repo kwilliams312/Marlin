@@ -41,7 +41,7 @@ L6470_Marlin L6470;
 
 uint8_t L6470_Marlin::dir_commands[MAX_L6470];  // array to hold direction command for each driver
 
-char L6470_Marlin::index_to_axis[MAX_L6470][3] = { "X ", "Y ", "Z ", "X2", "Y2", "Z2", "Z3", "E0", "E1", "E2", "E3", "E4", "E5" };
+char L6470_Marlin::index_to_axis[MAX_L6470][3] = { "X ", "Y ", "Z ", "X2", "Y2", "Z2", "Z3", "Z4", "E0", "E1", "E2", "E3", "E4", "E5" };
 
 bool L6470_Marlin::index_to_dir[MAX_L6470] =  {
   INVERT_X_DIR                        ,  // 0 X
@@ -59,12 +59,13 @@ bool L6470_Marlin::index_to_dir[MAX_L6470] =  {
   #endif
   INVERT_Z_DIR                        ,  // 5 Z2
   INVERT_Z_DIR                        ,  // 6 Z3
-  INVERT_E0_DIR                       ,  // 7 E0
-  INVERT_E1_DIR                       ,  // 8 E1
-  INVERT_E2_DIR                       ,  // 9 E2
-  INVERT_E3_DIR                       ,  //10 E3
-  INVERT_E4_DIR                       ,  //11 E4
-  INVERT_E5_DIR                       ,  //12 E5
+  INVERT_Z_DIR                        ,  // 7 Z4
+  INVERT_E0_DIR                       ,  // 8 E0
+  INVERT_E1_DIR                       ,  // 9 E1
+  INVERT_E2_DIR                       ,  //10 E2
+  INVERT_E3_DIR                       ,  //11 E3
+  INVERT_E4_DIR                       ,  //12 E4
+  INVERT_E5_DIR                       ,  //13 E5
 };
 
 uint8_t L6470_Marlin::axis_xref[MAX_L6470] = {
@@ -75,6 +76,7 @@ uint8_t L6470_Marlin::axis_xref[MAX_L6470] = {
   AxisEnum(Y_AXIS), // Y2
   AxisEnum(Z_AXIS), // Z2
   AxisEnum(Z_AXIS), // Z3
+  AxisEnum(Z_AXIS), // Z4
   AxisEnum(E_AXIS), // E0
   AxisEnum(E_AXIS), // E1
   AxisEnum(E_AXIS), // E2
@@ -110,6 +112,9 @@ void L6470_Marlin::populate_chain_array() {
   #endif
   #if AXIS_DRIVER_TYPE_Z3(L6470)
     _L6470_INIT_SPI(Z3);
+  #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+    _L6470_INIT_SPI(Z4);
   #endif
   #if AXIS_DRIVER_TYPE_E0(L6470)
     _L6470_INIT_SPI(E0);
@@ -169,23 +174,26 @@ uint16_t L6470_Marlin::get_status(const uint8_t axis) {
     #if AXIS_DRIVER_TYPE_Z3(L6470)
       case  6: return GET_L6470_STATUS(Z3);
     #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+      case  7: return GET_L6470_STATUS(Z4);
+    #endif
     #if AXIS_DRIVER_TYPE_E0(L6470)
-      case  7: return GET_L6470_STATUS(E0);
+      case  8: return GET_L6470_STATUS(E0);
     #endif
     #if AXIS_DRIVER_TYPE_E1(L6470)
-      case  8: return GET_L6470_STATUS(E1);
+      case  9: return GET_L6470_STATUS(E1);
     #endif
     #if AXIS_DRIVER_TYPE_E2(L6470)
-      case  9: return GET_L6470_STATUS(E2);
+      case 10: return GET_L6470_STATUS(E2);
     #endif
     #if AXIS_DRIVER_TYPE_E3(L6470)
-      case 10: return GET_L6470_STATUS(E3);
+      case 11: return GET_L6470_STATUS(E3);
     #endif
     #if AXIS_DRIVER_TYPE_E4(L6470)
-      case 11: return GET_L6470_STATUS(E4);
+      case 12: return GET_L6470_STATUS(E4);
     #endif
     #if AXIS_DRIVER_TYPE_E5(L6470)
-      case 12: return GET_L6470_STATUS(E5);
+      case 13: return GET_L6470_STATUS(E5);
     #endif
   }
 
@@ -218,23 +226,26 @@ uint32_t L6470_Marlin::get_param(uint8_t axis, uint8_t param) {
     #if AXIS_DRIVER_TYPE_Z3(L6470)
       case  6: return GET_L6470_PARAM(Z3);
     #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+      case  7: return GET_L6470_PARAM(Z4);
+    #endif
     #if AXIS_DRIVER_TYPE_E0(L6470)
-      case  7: return GET_L6470_PARAM(E0);
+      case  8: return GET_L6470_PARAM(E0);
     #endif
     #if AXIS_DRIVER_TYPE_E1(L6470)
-      case  8: return GET_L6470_PARAM(E1);
+      case  9: return GET_L6470_PARAM(E1);
     #endif
     #if AXIS_DRIVER_TYPE_E2(L6470)
-      case  9: return GET_L6470_PARAM(E2);
+      case 10: return GET_L6470_PARAM(E2);
     #endif
     #if AXIS_DRIVER_TYPE_E3(L6470)
-      case 10: return GET_L6470_PARAM(E3);
+      case 11: return GET_L6470_PARAM(E3);
     #endif
     #if AXIS_DRIVER_TYPE_E4(L6470)
-      case 11: return GET_L6470_PARAM(E4);
+      case 12: return GET_L6470_PARAM(E4);
     #endif
     #if AXIS_DRIVER_TYPE_E5(L6470)
-      case 12: return GET_L6470_PARAM(E5);
+      case 13: return GET_L6470_PARAM(E5);
     #endif
   }
 
@@ -267,23 +278,26 @@ void L6470_Marlin::set_param(uint8_t axis, uint8_t param, uint32_t value) {
     #if AXIS_DRIVER_TYPE_Z3(L6470)
       case  6: SET_L6470_PARAM(Z3);
     #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+      case  7: SET_L6470_PARAM(Z4);
+    #endif
     #if AXIS_DRIVER_TYPE_E0(L6470)
-      case  7: SET_L6470_PARAM(E0);
+      case  8: SET_L6470_PARAM(E0);
     #endif
     #if AXIS_DRIVER_TYPE_E1(L6470)
-      case  8: SET_L6470_PARAM(E1);
+      case  9: SET_L6470_PARAM(E1);
     #endif
     #if AXIS_DRIVER_TYPE_E2(L6470)
-      case  9: SET_L6470_PARAM(E2);
+      case 10: SET_L6470_PARAM(E2);
     #endif
     #if AXIS_DRIVER_TYPE_E3(L6470)
-      case 10: SET_L6470_PARAM(E3);
+      case 11: SET_L6470_PARAM(E3);
     #endif
     #if AXIS_DRIVER_TYPE_E4(L6470)
-      case 11: SET_L6470_PARAM(E4);
+      case 12: SET_L6470_PARAM(E4);
     #endif
     #if AXIS_DRIVER_TYPE_E5(L6470)
-      case 12: SET_L6470_PARAM(E5);
+      case 13: SET_L6470_PARAM(E5);
     #endif
   }
 }
@@ -604,23 +618,26 @@ void L6470_Marlin::error_status_decode(const uint16_t status, const uint8_t axis
     #if AXIS_DRIVER_TYPE_Z3(L6470)
       {  6, 0, 0, 0, 0, 0, 0 },
     #endif
-    #if AXIS_DRIVER_TYPE_E0(L6470)
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
       {  7, 0, 0, 0, 0, 0, 0 },
     #endif
-    #if AXIS_DRIVER_TYPE_E1(L6470)
+    #if AXIS_DRIVER_TYPE_E0(L6470)
       {  8, 0, 0, 0, 0, 0, 0 },
     #endif
-    #if AXIS_DRIVER_TYPE_E2(L6470)
+    #if AXIS_DRIVER_TYPE_E1(L6470)
       {  9, 0, 0, 0, 0, 0, 0 },
     #endif
-    #if AXIS_DRIVER_TYPE_E3(L6470)
+    #if AXIS_DRIVER_TYPE_E2(L6470)
       { 10, 0, 0, 0, 0, 0, 0 },
     #endif
-    #if AXIS_DRIVER_TYPE_E4(L6470)
+    #if AXIS_DRIVER_TYPE_E3(L6470)
       { 11, 0, 0, 0, 0, 0, 0 },
     #endif
+    #if AXIS_DRIVER_TYPE_E4(L6470)
+      { 12, 0, 0, 0, 0, 0, 0 },
+    #endif
     #if AXIS_DRIVER_TYPE_E5(L6470)
-      { 12, 0, 0, 0, 0, 0, 0 }
+      { 13, 0, 0, 0, 0, 0, 0 }
     #endif
   };
 
@@ -762,6 +779,9 @@ void L6470_Marlin::error_status_decode(const uint16_t status, const uint8_t axis
       #endif
       #if AXIS_DRIVER_TYPE_Z3(L6470)
         MONITOR_L6470_DRIVE(Z3);
+      #endif
+      #if AXIS_DRIVER_TYPE_Z4(L6470)
+        MONITOR_L6470_DRIVE(Z4);
       #endif
       #if AXIS_DRIVER_TYPE_E0(L6470)
         MONITOR_L6470_DRIVE(E0);

@@ -109,6 +109,17 @@
   #define Z3_DIR_READ() (stepperZ3.getStatus() & STATUS_DIR)
 #endif
 
+// Z4 Stepper
+#if HAS_Z4_ENABLE && AXIS_DRIVER_TYPE_Z4(L6470)
+  extern L6470 stepperZ4;
+  #define Z4_ENABLE_INIT NOOP
+  #define Z4_ENABLE_WRITE(STATE) NOOP
+  #define Z4_ENABLE_READ() (stepperZ4.getStatus() & STATUS_HIZ)
+  #define Z4_DIR_INIT NOOP
+  #define Z4_DIR_WRITE(STATE) L6470_WRITE_DIR_COMMAND(STATE,Z4)
+  #define Z4_DIR_READ() (stepperZ4.getStatus() & STATUS_DIR)
+#endif
+
 // E0 Stepper
 #if AXIS_DRIVER_TYPE_E0(L6470)
   extern L6470 stepperE0;

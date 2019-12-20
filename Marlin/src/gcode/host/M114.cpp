@@ -127,6 +127,9 @@
       #if AXIS_DRIVER_TYPE_Z3(L6470)
         REPORT_ABSOLUTE_POS(Z3);
       #endif
+      #if AXIS_DRIVER_TYPE_Z4(L6470)
+        REPORT_ABSOLUTE_POS(Z4);
+      #endif
       #if AXIS_DRIVER_TYPE_E0(L6470)
         REPORT_ABSOLUTE_POS(E0);
       #endif

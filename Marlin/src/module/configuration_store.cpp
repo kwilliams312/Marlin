@@ -116,10 +116,10 @@
 
 #pragma pack(push, 1) // No padding between variables
 
-typedef struct { uint16_t X, Y, Z, X2, Y2, Z2, Z3, E0, E1, E2, E3, E4, E5; } tmc_stepper_current_t;
-typedef struct { uint32_t X, Y, Z, X2, Y2, Z2, Z3, E0, E1, E2, E3, E4, E5; } tmc_hybrid_threshold_t;
+typedef struct { uint16_t X, Y, Z, X2, Y2, Z2, Z3, Z4, E0, E1, E2, E3, E4, E5; } tmc_stepper_current_t;
+typedef struct { uint32_t X, Y, Z, X2, Y2, Z2, Z3, Z4, E0, E1, E2, E3, E4, E5; } tmc_hybrid_threshold_t;
 typedef struct {  int16_t X, Y, Z, X2;                                     } tmc_sgt_t;
-typedef struct {     bool X, Y, Z, X2, Y2, Z2, Z3, E0, E1, E2, E3, E4, E5; } tmc_stealth_enabled_t;
+typedef struct {     bool X, Y, Z, X2, Y2, Z2, Z3, Z4, E0, E1, E2, E3, E4, E5; } tmc_stealth_enabled_t;
 
 // Limit an index to an array size
 #define ALIM(I,ARR) _MIN(I, COUNT(ARR) - 1)
@@ -232,6 +232,7 @@ typedef struct SettingsDataStruct {
           y2_endstop_adj,                               // M666 Y
           z2_endstop_adj,                               // M666 Z (S2)
           z3_endstop_adj;                               // M666 Z (S3)
+          z4_endstop_adj;                               // M666 Z (S4)
   #endif
 
   //
@@ -284,10 +285,10 @@ typedef struct SettingsDataStruct {
   //
   // HAS_TRINAMIC
   //
-  tmc_stepper_current_t tmc_stepper_current;            // M906 X Y Z X2 Y2 Z2 Z3 E0 E1 E2 E3 E4 E5
-  tmc_hybrid_threshold_t tmc_hybrid_threshold;          // M913 X Y Z X2 Y2 Z2 Z3 E0 E1 E2 E3 E4 E5
+  tmc_stepper_current_t tmc_stepper_current;            // M906 X Y Z X2 Y2 Z2 Z3 Z4 E0 E1 E2 E3 E4 E5
+  tmc_hybrid_threshold_t tmc_hybrid_threshold;          // M913 X Y Z X2 Y2 Z2 Z3 Z4 E0 E1 E2 E3 E4 E5
   tmc_sgt_t tmc_sgt;                                    // M914 X Y Z X2
-  tmc_stealth_enabled_t tmc_stealth_enabled;            // M569 X Y Z X2 Y2 Z2 Z3 E0 E1 E2 E3 E4 E5
+  tmc_stealth_enabled_t tmc_stealth_enabled;            // M569 X Y Z X2 Y2 Z2 Z3 Z4 E0 E1 E2 E3 E4 E5
 
   //
   // LIN_ADVANCE
@@ -751,8 +752,14 @@ void MarlinSettings::postprocess() {
           EEPROM_WRITE(dummy);
         #endif
 
-        #if ENABLED(Z_TRIPLE_ENDSTOPS)
+        #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
           EEPROM_WRITE(endstops.z3_endstop_adj);   // 1 float
+        #else
+          EEPROM_WRITE(dummy);
+        #endif
+
+        #if ENABLED(Z_QUAD_ENDSTOPS)
+          EEPROM_WRITE(endstops.z4_endstop_adj);   // 1 float
         #else
           EEPROM_WRITE(dummy);
         #endif
@@ -945,6 +952,9 @@ void MarlinSettings::postprocess() {
         #if AXIS_IS_TMC(Z3)
           tmc_stepper_current.Z3 = stepperZ3.getMilliamps();
         #endif
+        #if AXIS_IS_TMC(Z4)
+          tmc_stepper_current.Z4 = stepperZ4.getMilliamps();
+        #endif
         #if MAX_EXTRUDERS
           #if AXIS_IS_TMC(E0)
             tmc_stepper_current.E0 = stepperE0.getMilliamps();
@@ -1008,6 +1018,9 @@ void MarlinSettings::postprocess() {
         #if AXIS_HAS_STEALTHCHOP(Z3)
           tmc_hybrid_threshold.Z3 = stepperZ3.get_pwm_thrs();
         #endif
+        #if AXIS_HAS_STEALTHCHOP(Z4)
+          tmc_hybrid_threshold.Z4 = stepperZ4.get_pwm_thrs();
+        #endif
         #if MAX_EXTRUDERS
           #if AXIS_HAS_STEALTHCHOP(E0)
             tmc_hybrid_threshold.E0 = stepperE0.get_pwm_thrs();
@@ -1041,7 +1054,7 @@ void MarlinSettings::postprocess() {
       #else
         const tmc_hybrid_threshold_t tmc_hybrid_threshold = {
           .X  = 100, .Y  = 100, .Z  =   3,
-          .X2 = 100, .Y2 = 100, .Z2 =   3, .Z3 =   3,
+          .X2 = 100, .Y2 = 100, .Z2 =   3, .Z3 =   3, .Z4 = 3,
           .E0 =  30, .E1 =  30, .E2 =  30,
           .E3 =  30, .E4 =  30, .E5 =  30
         };
@@ -1100,6 +1113,9 @@ void MarlinSettings::postprocess() {
         #endif
         #if AXIS_HAS_STEALTHCHOP(Z3)
           tmc_stealth_enabled.Z3 = stepperZ3.get_stealthChop_status();
+        #endif
+        #if AXIS_HAS_STEALTHCHOP(Z4)
+          tmc_stealth_enabled.Z4 = stepperZ4.get_stealthChop_status();
         #endif
         #if MAX_EXTRUDERS
           #if AXIS_HAS_STEALTHCHOP(E0)
@@ -1561,8 +1577,13 @@ void MarlinSettings::postprocess() {
           #else
             EEPROM_READ(dummy);
           #endif
-          #if ENABLED(Z_TRIPLE_ENDSTOPS)
+          #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
             EEPROM_READ(endstops.z3_endstop_adj); // 1 float
+          #else
+            EEPROM_READ(dummy);
+          #endif
+          #if ENABLED(Z_QUAD_ENDSTOPS)
+            EEPROM_READ(endstops.z4_endstop_adj); // 1 float
           #else
             EEPROM_READ(dummy);
           #endif
@@ -1757,6 +1778,9 @@ void MarlinSettings::postprocess() {
             #if AXIS_IS_TMC(Z3)
               SET_CURR(Z3);
             #endif
+            #if AXIS_IS_TMC(Z4)
+              SET_CURR(Z4);
+            #endif
             #if AXIS_IS_TMC(E0)
               SET_CURR(E0);
             #endif
@@ -1808,6 +1832,9 @@ void MarlinSettings::postprocess() {
             #if AXIS_HAS_STEALTHCHOP(Z3)
               stepperZ3.set_pwm_thrs(tmc_hybrid_threshold.Z3);
             #endif
+            #if AXIS_HAS_STEALTHCHOP(Z4)
+              stepperZ4.set_pwm_thrs(tmc_hybrid_threshold.Z4);
+            #endif
             #if AXIS_HAS_STEALTHCHOP(E0)
               stepperE0.set_pwm_thrs(tmc_hybrid_threshold.E0);
             #endif
@@ -1834,7 +1861,7 @@ void MarlinSettings::postprocess() {
       // TMC StallGuard threshold.
       // X and X2 use the same value
       // Y and Y2 use the same value
-      // Z, Z2 and Z3 use the same value
+      // Z, Z2, Z3 and Z4 use the same value
       //
       {
         tmc_sgt_t tmc_sgt;
@@ -1870,6 +1897,9 @@ void MarlinSettings::postprocess() {
               #endif
               #if AXIS_HAS_STALLGUARD(Z3)
                 stepperZ3.homing_threshold(tmc_sgt.Z);
+              #endif
+              #if AXIS_HAS_STALLGUARD(Z4)
+                stepperZ4.homing_threshold(tmc_sgt.Z);
               #endif
             #endif
           }
@@ -1907,6 +1937,9 @@ void MarlinSettings::postprocess() {
             #endif
             #if AXIS_HAS_STEALTHCHOP(Z3)
               SET_STEPPING_MODE(Z3);
+            #endif
+            #if AXIS_HAS_STEALTHCHOP(Z4)
+              SET_STEPPING_MODE(Z4);
             #endif
             #if AXIS_HAS_STEALTHCHOP(E0)
               SET_STEPPING_MODE(E0);
@@ -2424,6 +2457,29 @@ void MarlinSettings::reset() {
       endstops.z3_endstop_adj = (
         #ifdef Z_TRIPLE_ENDSTOPS_ADJUSTMENT3
           Z_TRIPLE_ENDSTOPS_ADJUSTMENT3
+        #else
+          0
+        #endif
+      );
+    #endif
+    #elif ENABLED(Z_QUAD_ENDSTOPS)
+      endstops.z2_endstop_adj = (
+        #ifdef Z_QUAD_ENDSTOPS_ADJUSTMENT2
+          Z_QUAD_ENDSTOPS_ADJUSTMENT2
+        #else
+          0
+        #endif
+      );
+      endstops.z3_endstop_adj = (
+        #ifdef Z_QUAD_ENDSTOPS_ADJUSTMENT3
+          Z_QUAD_ENDSTOPS_ADJUSTMENT3
+        #else
+          0
+        #endif
+      );
+      endstops.z4_endstop_adj = (
+        #ifdef Z_QUAD_ENDSTOPS_ADJUSTMENT4
+          Z_QUAD_ENDSTOPS_ADJUSTMENT4
         #else
           0
         #endif
@@ -2979,12 +3035,15 @@ void MarlinSettings::reset() {
       #if ENABLED(Y_DUAL_ENDSTOPS)
         SERIAL_ECHOPAIR_P(SP_Y_STR, LINEAR_UNIT(endstops.y2_endstop_adj));
       #endif
-      #if ENABLED(Z_TRIPLE_ENDSTOPS)
+      #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
         SERIAL_ECHOLNPAIR("S1 Z", LINEAR_UNIT(endstops.z2_endstop_adj));
         CONFIG_ECHO_START();
         SERIAL_ECHOPAIR("  M666 S2 Z", LINEAR_UNIT(endstops.z3_endstop_adj));
       #elif ENABLED(Z_DUAL_ENDSTOPS)
         SERIAL_ECHOPAIR_P(SP_Z_STR, LINEAR_UNIT(endstops.z2_endstop_adj));
+      #endif
+      #if ENABLED(Z_QUAD_ENDSTOPS)
+        SERIAL_ECHOPAIR("  M666 S3 Z", LINEAR_UNIT(endstops.z4_endstop_adj));
       #endif
       SERIAL_EOL();
 
@@ -3163,6 +3222,11 @@ void MarlinSettings::reset() {
         SERIAL_ECHOLNPAIR(" I2 Z", stepperZ3.getMilliamps());
       #endif
 
+      #if AXIS_IS_TMC(Z4)
+        say_M906(forReplay);
+        SERIAL_ECHOLNPAIR(" I3 Z", stepperZ4.getMilliamps());
+      #endif
+
       #if AXIS_IS_TMC(E0)
         say_M906(forReplay);
         SERIAL_ECHOLNPAIR(" T0 E", stepperE0.getMilliamps());
@@ -3230,6 +3294,11 @@ void MarlinSettings::reset() {
         #if AXIS_HAS_STEALTHCHOP(Z3)
           say_M913(forReplay);
           SERIAL_ECHOLNPAIR(" I2 Z", stepperZ3.get_pwm_thrs());
+        #endif
+
+        #if AXIS_HAS_STEALTHCHOP(Z4)
+          say_M913(forReplay);
+          SERIAL_ECHOLNPAIR(" I3 Z", stepperZ4.get_pwm_thrs());
         #endif
 
         #if AXIS_HAS_STEALTHCHOP(E0)
@@ -3301,6 +3370,12 @@ void MarlinSettings::reset() {
           SERIAL_ECHOLNPAIR(" I2 Z", stepperZ3.homing_threshold());
         #endif
 
+        #if Z4_SENSORLESS
+          CONFIG_ECHO_START();
+          say_M914();
+          SERIAL_ECHOLNPAIR(" I3 Z", stepperZ4.homing_threshold());
+        #endif
+
       #endif // USE_SENSORLESS
 
       /**
@@ -3358,6 +3433,10 @@ void MarlinSettings::reset() {
 
         #if AXIS_HAS_STEALTHCHOP(Z3)
           if (stepperZ3.get_stealthChop_status()) { say_M569(forReplay, PSTR("I2 Z"), true); }
+        #endif
+
+        #if AXIS_HAS_STEALTHCHOP(Z4)
+          if (stepperZ4.get_stealthChop_status()) { say_M569(forReplay, PSTR("I3 Z"), true); }
         #endif
 
         #if AXIS_HAS_STEALTHCHOP(E0)

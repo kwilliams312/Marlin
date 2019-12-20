@@ -1139,6 +1139,9 @@ feedRate_t get_homing_bump_feedrate(const AxisEnum axis) {
           #if AXIS_HAS_STALLGUARD(Z3)
             stealth_states.z3 = tmc_enable_stallguard(stepperZ3);
           #endif
+          #if AXIS_HAS_STALLGUARD(Z4)
+            stealth_states.z4 = tmc_enable_stallguard(stepperZ4);
+          #endif
           #if CORE_IS_XZ && X_SENSORLESS
             stealth_states.x = tmc_enable_stallguard(stepperX);
           #elif CORE_IS_YZ && Y_SENSORLESS
@@ -1207,6 +1210,9 @@ feedRate_t get_homing_bump_feedrate(const AxisEnum axis) {
           #endif
           #if AXIS_HAS_STALLGUARD(Z3)
             tmc_disable_stallguard(stepperZ3, enable_stealth.z3);
+          #endif
+          #if AXIS_HAS_STALLGUARD(Z4)
+            tmc_disable_stallguard(stepperZ4, enable_stealth.z4);
           #endif
           #if CORE_IS_XZ && X_SENSORLESS
             tmc_disable_stallguard(stepperX, enable_stealth.x);
@@ -1583,7 +1589,54 @@ void homeaxis(const AxisEnum axis) {
         }
       }
     #endif
-    #if ENABLED(Z_TRIPLE_ENDSTOPS)
+
+    #if ENABLED(Z_QUAD_ENDSTOPS)
+      if (axis == Z_AXIS) {
+        // we push the function pointers for the stepper lock function into an array
+        void (*lock[4]) (bool)= {&stepper.set_z_lock, &stepper.set_z2_lock, &stepper.set_z3_lock, &stepper.set_z4_lock};
+        float adj[4] = {0, endstops.z2_endstop_adj, endstops.z3_endstop_adj, endstops.z3_endstop_adj};
+
+        void (*tempLock) (bool);
+        float tempAdj;
+
+        // manual bubble sort by adjust value
+        if (adj[1] < adj[0]) {
+          tempLock = lock[0], tempAdj = adj[0];
+          lock[0] = lock[1], adj[0] = adj[1];
+          lock[1] = tempLock, adj[1] = tempAdj;
+        }
+        if (adj[2] < adj[1]) {
+          tempLock = lock[1], tempAdj = adj[1];
+          lock[1] = lock[2], adj[1] = adj[2];
+          lock[2] = tempLock, adj[2] = tempAdj;
+        }
+        if (adj[1] < adj[0]) {
+          tempLock = lock[0], tempAdj = adj[0];
+          lock[0] = lock[1], adj[0] = adj[1];
+          lock[1] = tempLock, adj[1] = tempAdj;
+        }
+
+        if (pos_dir) {
+          // normalize adj to smallest value and do the first move
+          (*lock[0])(true);
+          do_homing_move(axis, adj[1] - adj[0]);
+          // lock the second stepper for the final correction
+          (*lock[1])(true);
+          do_homing_move(axis, adj[2] - adj[1]);
+        }
+        else {
+          (*lock[2])(true);
+          do_homing_move(axis, adj[1] - adj[2]);
+          (*lock[1])(true);
+          do_homing_move(axis, adj[0] - adj[1]);
+        }
+
+        stepper.set_z_lock(false);
+        stepper.set_z2_lock(false);
+        stepper.set_z3_lock(false);
+        stepper.set_z4_lock(false);
+      }
+    #elif ENABLED(Z_TRIPLE_ENDSTOPS)
       if (axis == Z_AXIS) {
         // we push the function pointers for the stepper lock function into an array
         void (*lock[3]) (bool)= {&stepper.set_z_lock, &stepper.set_z2_lock, &stepper.set_z3_lock};

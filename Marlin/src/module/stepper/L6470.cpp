@@ -55,6 +55,9 @@
 #if AXIS_DRIVER_TYPE_Z3(L6470)
   _L6470_DEFINE(Z3);
 #endif
+#if AXIS_DRIVER_TYPE_Z4(L6470)
+  _L6470_DEFINE(Z4);
+#endif
 #if AXIS_DRIVER_TYPE_E0(L6470)
   _L6470_DEFINE(E0);
 #endif
@@ -119,6 +122,9 @@ void L6470_Marlin::init_to_defaults() {
   #endif
   #if AXIS_DRIVER_TYPE_Z3(L6470)
     _L6470_INIT_CHIP(Z3);
+  #endif
+    #if AXIS_DRIVER_TYPE_Z4(L6470)
+    _L6470_INIT_CHIP(Z4);
   #endif
   #if AXIS_DRIVER_TYPE_E0(L6470)
     _L6470_INIT_CHIP(E0);
