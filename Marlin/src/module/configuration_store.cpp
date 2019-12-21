@@ -231,7 +231,7 @@ typedef struct SettingsDataStruct {
     float x2_endstop_adj,                               // M666 X
           y2_endstop_adj,                               // M666 Y
           z2_endstop_adj,                               // M666 Z (S2)
-          z3_endstop_adj;                               // M666 Z (S3)
+          z3_endstop_adj,                               // M666 Z (S3)
           z4_endstop_adj;                               // M666 Z (S4)
   #endif
 
