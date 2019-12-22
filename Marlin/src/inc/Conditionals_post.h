@@ -894,7 +894,7 @@
   || (HAS_CUSTOM_PROBE_PIN && Z_MIN_PROBE_PIN == A##_##M##_PIN ) )
 
 #define IS_Z4_OR_PROBE(A,M) ( \
-     (ENABLED(Z_TRIPLE_ENDSTOPS) && Z4_USE_ENDSTOP == _##A##M##_) \
+     (ENABLED(Z_QUAD_ENDSTOPS) && Z4_USE_ENDSTOP == _##A##M##_) \
   || (HAS_CUSTOM_PROBE_PIN && Z_MIN_PROBE_PIN == A##_##M##_PIN ) )
 
 /**
