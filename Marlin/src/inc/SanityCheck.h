@@ -509,7 +509,7 @@
 #endif
 
 /**
- * Dual / Triple Stepper Drivers
+ * Multiple Stepper Drivers Per Axis
  */
 #if BOTH(X_DUAL_STEPPER_DRIVERS, DUAL_X_CARRIAGE)
   #error "DUAL_X_CARRIAGE is not compatible with X_DUAL_STEPPER_DRIVERS."
