@@ -1768,8 +1768,7 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
   #elif ENABLED(DELTA)
     #error "Z_DUAL_ENDSTOPS is not compatible with DELTA."
   #endif
-#endif
-#if ENABLED(Z_TRIPLE_ENDSTOPS)
+#elif ENABLED(Z_TRIPLE_ENDSTOPS)
   #if !Z2_USE_ENDSTOP
     #error "You must set Z2_USE_ENDSTOP with Z_TRIPLE_ENDSTOPS."
   #elif Z2_USE_ENDSTOP == _XMIN_ && DISABLED(USE_XMIN_PLUG)
@@ -1807,6 +1806,58 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
     #error "Z3_USE_ENDSTOP has been assigned to a nonexistent endstop!"
   #elif ENABLED(DELTA)
     #error "Z_TRIPLE_ENDSTOPS is not compatible with DELTA."
+  #endif
+#elif ENABLED(Z_QUAD_ENDSTOPS)
+  #if !Z2_USE_ENDSTOP
+    #error "You must set Z2_USE_ENDSTOP with Z_QUAD_ENDSTOPS."
+  #elif Z2_USE_ENDSTOP == _XMIN_ && DISABLED(USE_XMIN_PLUG)
+    #error "USE_XMIN_PLUG is required when Z2_USE_ENDSTOP is _XMIN_."
+  #elif Z2_USE_ENDSTOP == _XMAX_ && DISABLED(USE_XMAX_PLUG)
+    #error "USE_XMAX_PLUG is required when Z2_USE_ENDSTOP is _XMAX_."
+  #elif Z2_USE_ENDSTOP == _YMIN_ && DISABLED(USE_YMIN_PLUG)
+    #error "USE_YMIN_PLUG is required when Z2_USE_ENDSTOP is _YMIN_."
+  #elif Z2_USE_ENDSTOP == _YMAX_ && DISABLED(USE_YMAX_PLUG)
+    #error "USE_YMAX_PLUG is required when Z2_USE_ENDSTOP is _YMAX_."
+  #elif Z2_USE_ENDSTOP == _ZMIN_ && DISABLED(USE_ZMIN_PLUG)
+    #error "USE_ZMIN_PLUG is required when Z2_USE_ENDSTOP is _ZMIN_."
+  #elif Z2_USE_ENDSTOP == _ZMAX_ && DISABLED(USE_ZMAX_PLUG)
+    #error "USE_ZMAX_PLUG is required when Z2_USE_ENDSTOP is _ZMAX_."
+  #elif !HAS_Z2_MIN && !HAS_Z2_MAX
+    #error "Z2_USE_ENDSTOP has been assigned to a nonexistent endstop!"
+  #elif !Z3_USE_ENDSTOP
+    #error "You must set Z3_USE_ENDSTOP with Z_QUAD_ENDSTOPS."
+  #elif Z3_USE_ENDSTOP == _XMIN_ && DISABLED(USE_XMIN_PLUG)
+    #error "USE_XMIN_PLUG is required when Z3_USE_ENDSTOP is _XMIN_."
+  #elif Z3_USE_ENDSTOP == _XMAX_ && DISABLED(USE_XMAX_PLUG)
+    #error "USE_XMAX_PLUG is required when Z3_USE_ENDSTOP is _XMAX_."
+  #elif Z3_USE_ENDSTOP == _YMIN_ && DISABLED(USE_YMIN_PLUG)
+    #error "USE_YMIN_PLUG is required when Z3_USE_ENDSTOP is _YMIN_."
+  #elif Z3_USE_ENDSTOP == _YMAX_ && DISABLED(USE_YMAX_PLUG)
+    #error "USE_YMAX_PLUG is required when Z3_USE_ENDSTOP is _YMAX_."
+  #elif Z3_USE_ENDSTOP == _ZMIN_ && DISABLED(USE_ZMIN_PLUG)
+    #error "USE_ZMIN_PLUG is required when Z3_USE_ENDSTOP is _ZMIN_."
+  #elif Z3_USE_ENDSTOP == _ZMAX_ && DISABLED(USE_ZMAX_PLUG)
+    #error "USE_ZMAX_PLUG is required when Z3_USE_ENDSTOP is _ZMAX_."
+  #elif !HAS_Z3_MIN && !HAS_Z3_MAX
+    #error "Z3_USE_ENDSTOP has been assigned to a nonexistent endstop!"
+  #elif !Z4_USE_ENDSTOP
+    #error "You must set Z4_USE_ENDSTOP with Z_QUAD_ENDSTOPS."
+  #elif Z4_USE_ENDSTOP == _XMIN_ && DISABLED(USE_XMIN_PLUG)
+    #error "USE_XMIN_PLUG is required when Z4_USE_ENDSTOP is _XMIN_."
+  #elif Z4_USE_ENDSTOP == _XMAX_ && DISABLED(USE_XMAX_PLUG)
+    #error "USE_XMAX_PLUG is required when Z4_USE_ENDSTOP is _XMAX_."
+  #elif Z4_USE_ENDSTOP == _YMIN_ && DISABLED(USE_YMIN_PLUG)
+    #error "USE_YMIN_PLUG is required when Z4_USE_ENDSTOP is _YMIN_."
+  #elif Z4_USE_ENDSTOP == _YMAX_ && DISABLED(USE_YMAX_PLUG)
+    #error "USE_YMAX_PLUG is required when Z4_USE_ENDSTOP is _YMAX_."
+  #elif Z4_USE_ENDSTOP == _ZMIN_ && DISABLED(USE_ZMIN_PLUG)
+    #error "USE_ZMIN_PLUG is required when Z4_USE_ENDSTOP is _ZMIN_."
+  #elif Z4_USE_ENDSTOP == _ZMAX_ && DISABLED(USE_ZMAX_PLUG)
+    #error "USE_ZMAX_PLUG is required when Z4_USE_ENDSTOP is _ZMAX_."
+  #elif !HAS_Z4_MIN && !HAS_Z4_MAX
+    #error "Z4_USE_ENDSTOP has been assigned to a nonexistent endstop!"
+  #elif ENABLED(DELTA)
+    #error "Z_QUAD_ENDSTOPS is not compatible with DELTA."
   #endif
 #endif
 
