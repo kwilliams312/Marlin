@@ -133,6 +133,11 @@ void GcodeSuite::G34() {
 
   do { // break out on error
 
+    ENABLED(Z_QUAD_STEPPER_DRIVERS)
+      SERIAL_ECHOLNPGM("Quad Z Stepper Leveling not Yet Supported");
+      break;
+    #endif
+
     const int8_t z_auto_align_iterations = parser.intval('I', Z_STEPPER_ALIGN_ITERATIONS);
     if (!WITHIN(z_auto_align_iterations, 1, 30)) {
       SERIAL_ECHOLNPGM("?(I)teration out of bounds (1-30).");
