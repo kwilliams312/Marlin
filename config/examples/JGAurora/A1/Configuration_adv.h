@@ -518,7 +518,7 @@
   #endif
 #endif
 
-//#define Z_QUAD_STEPPER_DRIVERS
+//#define Z_QUAD_STEPPER_DRIVERS // This feature is under active development and is still EXPERIMENTAL
 #if ENABLED(Z_QUAD_STEPPER_DRIVERS)
   //#define Z_QUAD_ENDSTOPS
   #if ENABLED(Z_QUAD_ENDSTOPS)
