@@ -133,7 +133,7 @@ void GcodeSuite::G34() {
 
   do { // break out on error
 
-    ENABLED(Z_QUAD_STEPPER_DRIVERS)
+    #if ENABLED(Z_QUAD_STEPPER_DRIVERS)
       SERIAL_ECHOLNPGM("Quad Z Stepper Leveling not Yet Supported");
       break;
     #endif
