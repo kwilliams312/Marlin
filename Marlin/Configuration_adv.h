@@ -2272,7 +2272,7 @@
     #define Z2_CHAIN_POS        -1
   #endif
 
-#if AXIS_DRIVER_TYPE_Z3(L6470)
+  #if AXIS_DRIVER_TYPE_Z3(L6470)
     #define Z3_MICROSTEPS      128
     #define Z3_OVERCURRENT    2000
     #define Z3_STALLCURRENT   1500

@@ -79,6 +79,9 @@ Endstops::esbits_t Endstops::live_state = 0;
 #if ENABLED(Z_TRIPLE_ENDSTOPS)
   float Endstops::z3_endstop_adj;
 #endif
+#if ENABLED(Z_QUAD_ENDSTOPS)
+  float Endstops::z4_endstop_adj;
+#endif
 
 #if ENABLED(SPI_ENDSTOPS)
   Endstops::tmc_spi_homing_t Endstops::tmc_spi_homing; // = 0
@@ -726,6 +729,16 @@ void Endstops::update() {
     } \
   }while(0)
 
+  #define PROCESS_QUAD_ENDSTOP(AXIS1, AXIS2, AXIS3, AXIS4, MINMAX) do { \
+    const byte quad_hit = TEST_ENDSTOP(_ENDSTOP(AXIS1, MINMAX)) | (TEST_ENDSTOP(_ENDSTOP(AXIS2, MINMAX)) << 1) | (TEST_ENDSTOP(_ENDSTOP(AXIS3, MINMAX)) << 2) | (TEST_ENDSTOP(_ENDSTOP(AXIS4, MINMAX)) << 3); \
+    if (quad_hit) { \
+      _ENDSTOP_HIT(AXIS1, MINMAX); \
+      /* if not performing home or if both endstops were trigged during homing... */ \
+      if (!stepper.separate_multi_axis || quad_hit == 0b1111) \
+        planner.endstop_triggered(_AXIS(AXIS1)); \
+    } \
+  }while(0)
+
   #if ENABLED(G38_PROBE_TARGET) && PIN_EXISTS(Z_MIN_PROBE) && !(CORE_IS_XY || CORE_IS_XZ)
     #if ENABLED(G38_PROBE_AWAY)
       #define _G38_OPEN_STATE (G38_move >= 4)
@@ -812,7 +825,7 @@ void Endstops::update() {
     else { // Z +direction. Gantry up, bed down.
       #if HAS_Z_MAX || (Z_SPI_SENSORLESS && Z_HOME_DIR > 0)
         #if ENABLED(Z_QUAD_ENDSTOPS)
-          PROCESS_TRIPLE_ENDSTOP(Z, Z2, Z3, Z4, MAX);
+          PROCESS_QUAD_ENDSTOP(Z, Z2, Z3, Z4, MAX);
         #elif ENABLED(Z_TRIPLE_ENDSTOPS)
           PROCESS_TRIPLE_ENDSTOP(Z, Z2, Z3, MAX);
         #elif ENABLED(Z_DUAL_ENDSTOPS)

@@ -61,7 +61,7 @@
    *   Set Z2 Only: M666 S2 Z<offset>
    *   Set Z3 Only: M666 S3 Z<offset>
    *   Set Z4 Only: M666 S4 Z<offset>
-   *      Set Both: M666 Z<offset>
+   *      Set All: M666 Z<offset>
    */
   void GcodeSuite::M666() {
     #if ENABLED(X_DUAL_ENDSTOPS)

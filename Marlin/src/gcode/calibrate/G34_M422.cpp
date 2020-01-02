@@ -66,7 +66,7 @@ constexpr xy_pos_t test_z_stepper_align_xy[] = Z_STEPPER_ALIGN_XY;
 
   static_assert(COUNT(test_z_stepper_align_xy) == Z_STEPPER_COUNT,
     #if ENABLED(Z_QUAD_STEPPER_DRIVERS)
-      "Z_STEPPER_ALIGN_XY requires four {X,Y} entries (Z, Z2, Z3 and Z4)."
+      "Z_STEPPER_ALIGN_XY requires four {X,Y} entries (Z, Z2, Z3, and Z4)."
     #elif ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
       "Z_STEPPER_ALIGN_XY requires three {X,Y} entries (Z, Z2, and Z3)."
     #else

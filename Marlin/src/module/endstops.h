@@ -55,7 +55,7 @@ class Endstops {
         static float z3_endstop_adj;
       #endif
       #if ENABLED(Z_QUAD_ENDSTOPS)
-        static float z3_endstop_adj;
+        static float z4_endstop_adj;
       #endif
     #else
       typedef uint8_t esbits_t;
