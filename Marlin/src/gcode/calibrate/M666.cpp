@@ -70,20 +70,15 @@
     #if ENABLED(Y_DUAL_ENDSTOPS)
       if (parser.seenval('Y')) endstops.y2_endstop_adj = parser.value_linear_units();
     #endif
-    #if ENABLED(Z_QUAD_ENDSTOPS)
+    #if ANY(Z_TRIPLE_ENDSTOPS, Z_QUAD_ENDSTOPS)
       if (parser.seenval('Z')) {
         const float z_adj = parser.value_linear_units();
         const int ind = parser.intval('S');
         if (!ind || ind == 2) endstops.z2_endstop_adj = z_adj;
         if (!ind || ind == 3) endstops.z3_endstop_adj = z_adj;
-        if (!ind || ind == 4) endstops.z4_endstop_adj = z_adj;
-      }
-    #elif ENABLED(Z_TRIPLE_ENDSTOPS)
-      if (parser.seenval('Z')) {
-        const float z_adj = parser.value_linear_units();
-        const int ind = parser.intval('S');
-        if (!ind || ind == 2) endstops.z2_endstop_adj = z_adj;
-        if (!ind || ind == 3) endstops.z3_endstop_adj = z_adj;
+        #if ENABLED(ENABLED(Z_QUAD_ENDSTOPS))
+          if (!ind || ind == 4) endstops.z4_endstop_adj = z_adj;
+        #endif
       }
     #elif Z_MULTI_ENDSTOPS
       if (parser.seen('Z')) endstops.z2_endstop_adj = parser.value_linear_units();
