@@ -76,7 +76,7 @@
         const int ind = parser.intval('S');
         if (!ind || ind == 2) endstops.z2_endstop_adj = z_adj;
         if (!ind || ind == 3) endstops.z3_endstop_adj = z_adj;
-        #if ENABLED(ENABLED(Z_QUAD_ENDSTOPS))
+        #if ENABLED(Z_QUAD_ENDSTOPS)
           if (!ind || ind == 4) endstops.z4_endstop_adj = z_adj;
         #endif
       }
