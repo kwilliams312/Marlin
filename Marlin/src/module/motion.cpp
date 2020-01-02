@@ -1637,7 +1637,7 @@ void homeaxis(const AxisEnum axis) {
       if (axis == Z_AXIS) {
         // we push the function pointers for the stepper lock function into an array
         void (*lock[4]) (bool)= {&stepper.set_z_lock, &stepper.set_z2_lock, &stepper.set_z3_lock, &stepper.set_z4_lock};
-        float adj[4] = {0, endstops.z2_endstop_adj, endstops.z3_endstop_adj, endstops.z3_endstop_adj};
+        float adj[4] = {0, endstops.z2_endstop_adj, endstops.z3_endstop_adj, endstops.z4_endstop_adj};
 
         void (*tempLock) (bool);
         float tempAdj;
@@ -1647,6 +1647,16 @@ void homeaxis(const AxisEnum axis) {
           tempLock = lock[0], tempAdj = adj[0];
           lock[0] = lock[1], adj[0] = adj[1];
           lock[1] = tempLock, adj[1] = tempAdj;
+        }
+        if (adj[2] < adj[1]) {
+          tempLock = lock[1], tempAdj = adj[1];
+          lock[1] = lock[2], adj[1] = adj[2];
+          lock[2] = tempLock, adj[2] = tempAdj;
+        }
+        if (adj[3] < adj[2]) {
+          tempLock = lock[2], tempAdj = adj[2];
+          lock[2] = lock[3], adj[2] = adj[3];
+          lock[3] = tempLock, adj[3] = tempAdj;
         }
         if (adj[2] < adj[1]) {
           tempLock = lock[1], tempAdj = adj[1];
@@ -1663,11 +1673,16 @@ void homeaxis(const AxisEnum axis) {
           // normalize adj to smallest value and do the first move
           (*lock[0])(true);
           do_homing_move(axis, adj[1] - adj[0]);
-          // lock the second stepper for the final correction
+          // lock the second stepper for the next correction
           (*lock[1])(true);
           do_homing_move(axis, adj[2] - adj[1]);
+          // lock the third stepper for the final correction
+          (*lock[2])(true);
+          do_homing_move(axis, adj[3] - adj[2]);
         }
         else {
+          (*lock[3])(true);
+          do_homing_move(axis, adj[2] - adj[3]);
           (*lock[2])(true);
           do_homing_move(axis, adj[1] - adj[2]);
           (*lock[1])(true);
