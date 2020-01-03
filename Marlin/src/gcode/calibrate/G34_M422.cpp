@@ -94,7 +94,31 @@ static_assert(FTEST(1) && BTEST(1), "The 2nd Z_STEPPER_ALIGN_XY Y is unreachable
 //
 // G34 / M422 shared data
 //
-static xy_pos_t z_stepper_align_pos[] = Z_STEPPER_ALIGN_XY;
+static xy_pos_t z_stepper_align_pos[] =
+#if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+  Z_STEPPER_ALIGN_XY
+#else
+  #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+    #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
+      #if Z_STEPPER_ALIGN_ROTATE == 1
+        {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
+      #elif Z_STEPPER_ALIGN_ROTATE == 2
+        {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
+      #elif Z_STEPPER_ALIGN_ROTATE == 3
+        {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
+      #endif
+    #else
+      {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
+    #endif
+  #else
+    #if defined(Z_STEPPER_ALIGN_ROTATE)
+      {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
+    #else
+      {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
+    #endif
+  #endif
+#endif
+;
 
 #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
   static xy_pos_t z_stepper_align_stepper_pos[] = Z_STEPPER_ALIGN_STEPPER_XY;
@@ -209,6 +233,9 @@ void GcodeSuite::G34() {
 
     uint8_t iteration;
     bool err_break = false;
+
+    bool adjustment_reverse = false;
+
     for (iteration = 0; iteration < z_auto_align_iterations; ++iteration) {
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> probing all positions.");
 
@@ -305,10 +332,9 @@ void GcodeSuite::G34() {
         #endif
 
         // Check for less accuracy compared to last move
-        if (last_z_align_move[zstepper] < z_align_abs - 1.0) {
+        if (last_z_align_move[zstepper] < z_align_abs -  z_auto_align_accuracy)  {
           SERIAL_ECHOLNPGM("Decreasing accuracy detected.");
-          err_break = true;
-          break;
+          adjustment_reverse = !adjustment_reverse;
         }
 
         // Remember the alignment for the next iteration
@@ -328,6 +354,11 @@ void GcodeSuite::G34() {
             case 2: stepper.set_z3_lock(false); break;
           #endif
         }
+
+        // Decreasing accuracy was detected so move was inverted.
+        // Will match reversed Z steppers on dual steppers. Triple will need more work to map.
+        if (adjustment_reverse)
+          z_align_move = -z_align_move;
 
         // Do a move to correct part of the misalignment for the current stepper
         do_blocking_move_to_z(amplification * z_align_move + current_position.z);
