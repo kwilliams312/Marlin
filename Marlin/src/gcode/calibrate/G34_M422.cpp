@@ -58,12 +58,6 @@
       "Z_STEPPER_ALIGN_XY requires at least three {X,Y} entries (Z, Z2, Z3, ...)."
     );
 
-    constexpr float test_z_stepper_align_stepper_xy[][XY] = Z_STEPPER_ALIGN_STEPPER_XY;
-    static_assert(
-      COUNT(test_z_stepper_align_stepper_xy) == Z_STEPPER_COUNT,
-      "Z_STEPPER_ALIGN_STEPPER_XY requires three {X,Y} entries (one per Z stepper)."
-    );
-
   #else
 
     static_assert(COUNT(test_z_stepper_align_xy) == Z_STEPPER_COUNT,
@@ -95,6 +89,14 @@
 #endif
 
 #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+  constexpr float test_z_stepper_align_stepper_xy[][XY] = Z_STEPPER_ALIGN_STEPPER_XY;
+  static_assert(
+    COUNT(test_z_stepper_align_stepper_xy) == Z_STEPPER_COUNT,
+    "Z_STEPPER_ALIGN_STEPPER_XY requires three {X,Y} entries (one per Z stepper)."
+  );
+#endif
+
+#if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
   static xy_pos_t z_stepper_align_stepper_pos[] = Z_STEPPER_ALIGN_STEPPER_XY;
 #endif
 
@@ -122,7 +124,7 @@ void GcodeSuite::G34() {
   }
 
   xy_pos_t z_stepper_align_pos[] =
-  #if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+  #ifdef Z_STEPPER_ALIGN_XY
     Z_STEPPER_ALIGN_XY
   #else
     #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
@@ -234,7 +236,9 @@ void GcodeSuite::G34() {
     uint8_t iteration;
     bool err_break = false;
 
-    bool adjustment_reverse = false;
+    #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+      bool adjustment_reverse = false;
+    #endif
 
     for (iteration = 0; iteration < z_auto_align_iterations; ++iteration) {
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> probing all positions.");
@@ -337,7 +341,12 @@ void GcodeSuite::G34() {
         // Check for less accuracy compared to last move
         if (last_z_align_move[zstepper] < z_align_abs -  z_auto_align_accuracy)  {
           SERIAL_ECHOLNPGM("Decreasing accuracy detected.");
-          adjustment_reverse = !adjustment_reverse;
+          #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+            adjustment_reverse = !adjustment_reverse;
+          #else
+            err_break = true;
+            break;
+          #endif
         }
 
         // Remember the alignment for the next iteration
@@ -358,10 +367,12 @@ void GcodeSuite::G34() {
           #endif
         }
 
-        // Decreasing accuracy was detected so move was inverted.
-        // Will match reversed Z steppers on dual steppers. Triple will need more work to map.
-        if (adjustment_reverse)
-          z_align_move = -z_align_move;
+        #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+          // Decreasing accuracy was detected so move was inverted.
+          // Will match reversed Z steppers on dual steppers. Triple will need more work to map.
+          if (adjustment_reverse)
+            z_align_move = -z_align_move;
+        #endif
 
         // Do a move to correct part of the misalignment for the current stepper
         do_blocking_move_to_z(amplification * z_align_move + current_position.z);
@@ -428,7 +439,7 @@ void GcodeSuite::G34() {
  */
 void GcodeSuite::M422() {
   xy_pos_t z_stepper_align_pos[] =
-  #if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+  #ifdef Z_STEPPER_ALIGN_XY
     Z_STEPPER_ALIGN_XY
   #else
     #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
