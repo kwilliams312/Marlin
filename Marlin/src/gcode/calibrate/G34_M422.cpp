@@ -100,7 +100,7 @@
   static xy_pos_t z_stepper_align_stepper_pos[] = Z_STEPPER_ALIGN_STEPPER_XY;
 #endif
 
-#define G34_PROBE_COUNT COUNT(z_stepper_align_pos)
+#define G34_PROBE_COUNT COUNT(z_stepper_align_xy)
 
 inline void set_all_z_lock(const bool lock) {
   stepper.set_z_lock(lock);
@@ -123,30 +123,30 @@ void GcodeSuite::G34() {
     log_machine_info();
   }
 
-  xy_pos_t z_stepper_align_pos[] =
-  #ifdef Z_STEPPER_ALIGN_XY
-    Z_STEPPER_ALIGN_XY
-  #else
-    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-      #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
-        #if Z_STEPPER_ALIGN_ROTATE == 1
-          {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
-        #elif Z_STEPPER_ALIGN_ROTATE == 2
-          {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
-        #elif Z_STEPPER_ALIGN_ROTATE == 3
-          {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
-        #endif
-      #else
-        {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
-      #endif
+  const xy_pos_t z_stepper_align_pos[] =
+    #ifdef Z_STEPPER_ALIGN_XY
+      Z_STEPPER_ALIGN_XY
     #else
-      #if defined(Z_STEPPER_ALIGN_ROTATE)
-        {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
-      #else
-        {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
-      #endif
+      {
+        #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+          #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
+            #if Z_STEPPER_ALIGN_ROTATE == 1
+              { probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }
+            #elif Z_STEPPER_ALIGN_ROTATE == 2
+              { probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }
+            #elif Z_STEPPER_ALIGN_ROTATE == 3
+              { probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }
+            #endif
+          #else
+            { probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }
+          #endif
+        #elif defined(Z_STEPPER_ALIGN_ROTATE)
+          { X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }
+        #else
+          { probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }
+        #endif
+      }
     #endif
-  #endif
   ;
 
   do { // break out on error
@@ -257,8 +257,8 @@ void GcodeSuite::G34() {
         // Safe clearance even on an incline
         if (iteration == 0 || i > 0) do_blocking_move_to_z(z_probe);
 
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probing X ", z_stepper_align_pos[iprobe].x);
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probing Y ", z_stepper_align_pos[iprobe].y);
+        if (DEBUGGING(LEVELING))
+          DEBUG_ECHOLNPAIR_P(PSTR("Probing X"), z_stepper_align_pos[iprobe].x, SP_Y_STR, z_stepper_align_pos[iprobe].y);
 
         // Probe a Z height for each stepper.
         const float z_probed_height = probe_at_point(z_stepper_align_pos[iprobe], raise_after, 0, true);
@@ -439,29 +439,29 @@ void GcodeSuite::G34() {
  */
 void GcodeSuite::M422() {
   xy_pos_t z_stepper_align_pos[] =
-  #ifdef Z_STEPPER_ALIGN_XY
-    Z_STEPPER_ALIGN_XY
-  #else
-    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-      #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
-        #if Z_STEPPER_ALIGN_ROTATE == 1
-          {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
-        #elif Z_STEPPER_ALIGN_ROTATE == 2
-          {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
-        #elif Z_STEPPER_ALIGN_ROTATE == 3
-          {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
-        #endif
-      #else
-        {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
-      #endif
+    #ifdef Z_STEPPER_ALIGN_XY
+      Z_STEPPER_ALIGN_XY
     #else
-      #if defined(Z_STEPPER_ALIGN_ROTATE)
-        {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
-      #else
-        {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
-      #endif
+      {
+        #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+          #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
+            #if Z_STEPPER_ALIGN_ROTATE == 1
+              { probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }
+            #elif Z_STEPPER_ALIGN_ROTATE == 2
+              { probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }
+            #elif Z_STEPPER_ALIGN_ROTATE == 3
+              { probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }
+            #endif
+          #else
+            { probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }
+          #endif
+        #elif defined(Z_STEPPER_ALIGN_ROTATE)
+          { X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }
+        #else
+          { probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }
+        #endif
+      }
     #endif
-  #endif
   ;
 
   if (!parser.seen_any()) {
