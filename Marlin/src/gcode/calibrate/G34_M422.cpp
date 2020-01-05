@@ -123,7 +123,7 @@ void GcodeSuite::G34() {
     log_machine_info();
   }
 
-  const xy_pos_t z_stepper_align_pos[] =
+  const xy_pos_t z_stepper_align_xy[] =
     #ifdef Z_STEPPER_ALIGN_XY
       Z_STEPPER_ALIGN_XY
     #else
@@ -214,11 +214,11 @@ void GcodeSuite::G34() {
     // iteration this will be re-calculated based on the actual bed position
     float z_probe = Z_BASIC_CLEARANCE + (G34_MAX_GRADE) * 0.01f * (
       #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-         SQRT(_MAX(HYPOT2(z_stepper_align_pos[0].x - z_stepper_align_pos[0].y, z_stepper_align_pos[1].x - z_stepper_align_pos[1].y),
-                   HYPOT2(z_stepper_align_pos[1].x - z_stepper_align_pos[1].y, z_stepper_align_pos[2].x - z_stepper_align_pos[2].y),
-                   HYPOT2(z_stepper_align_pos[2].x - z_stepper_align_pos[2].y, z_stepper_align_pos[0].x - z_stepper_align_pos[0].y)))
+         SQRT(_MAX(HYPOT2(z_stepper_align_xy[0].x - z_stepper_align_xy[0].y, z_stepper_align_xy[1].x - z_stepper_align_xy[1].y),
+                   HYPOT2(z_stepper_align_xy[1].x - z_stepper_align_xy[1].y, z_stepper_align_xy[2].x - z_stepper_align_xy[2].y),
+                   HYPOT2(z_stepper_align_xy[2].x - z_stepper_align_xy[2].y, z_stepper_align_xy[0].x - z_stepper_align_xy[0].y)))
       #else
-         HYPOT(z_stepper_align_pos[0].x - z_stepper_align_pos[0].y, z_stepper_align_pos[1].x - z_stepper_align_pos[1].y)
+         HYPOT(z_stepper_align_xy[0].x - z_stepper_align_xy[0].y, z_stepper_align_xy[1].x - z_stepper_align_xy[1].y)
       #endif
     );
 
@@ -258,10 +258,10 @@ void GcodeSuite::G34() {
         if (iteration == 0 || i > 0) do_blocking_move_to_z(z_probe);
 
         if (DEBUGGING(LEVELING))
-          DEBUG_ECHOLNPAIR_P(PSTR("Probing X"), z_stepper_align_pos[iprobe].x, SP_Y_STR, z_stepper_align_pos[iprobe].y);
+          DEBUG_ECHOLNPAIR_P(PSTR("Probing X"), z_stepper_align_xy[iprobe].x, SP_Y_STR, z_stepper_align_xy[iprobe].y);
 
         // Probe a Z height for each stepper.
-        const float z_probed_height = probe_at_point(z_stepper_align_pos[iprobe], raise_after, 0, true);
+        const float z_probed_height = probe_at_point(z_stepper_align_xy[iprobe], raise_after, 0, true);
         if (isnan(z_probed_height)) {
           SERIAL_ECHOLNPGM("Probing failed.");
           err_break = true;
@@ -302,7 +302,7 @@ void GcodeSuite::G34() {
         incremental_LSF_reset(&lfd);
         for (uint8_t i = 0; i < G34_PROBE_COUNT; ++i) {
           SERIAL_ECHOLNPAIR("PROBEPT_", int(i + 1), ": ", z_measured[i]);
-          incremental_LSF(&lfd, z_stepper_align_pos[i], z_measured[i]);
+          incremental_LSF(&lfd, z_stepper_align_xy[i], z_measured[i]);
         }
         finish_incremental_LSF(&lfd);
 
@@ -438,7 +438,7 @@ void GcodeSuite::G34() {
  *   Y<pos>   : Y position to set (Unchanged if omitted)
  */
 void GcodeSuite::M422() {
-  xy_pos_t z_stepper_align_pos[] =
+  xy_pos_t z_stepper_align_xy[] =
     #ifdef Z_STEPPER_ALIGN_XY
       Z_STEPPER_ALIGN_XY
     #else
@@ -466,7 +466,7 @@ void GcodeSuite::M422() {
 
   if (!parser.seen_any()) {
     for (uint8_t i = 0; i < G34_PROBE_COUNT; ++i)
-      SERIAL_ECHOLNPAIR_P(PSTR("M422 S"), i + 1, SP_X_STR, z_stepper_align_pos[i].x, SP_Y_STR, z_stepper_align_pos[i].y);
+      SERIAL_ECHOLNPAIR_P(PSTR("M422 S"), i + 1, SP_X_STR, z_stepper_align_xy[i].x, SP_Y_STR, z_stepper_align_xy[i].y);
     #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
       for (uint8_t i = 0; i < Z_STEPPER_COUNT; ++i)
         SERIAL_ECHOLNPAIR_P(PSTR("M422 W"), i + 1, SP_X_STR, z_stepper_align_stepper_pos[i].x, SP_Y_STR, z_stepper_align_stepper_pos[i].y);
@@ -487,7 +487,7 @@ void GcodeSuite::M422() {
     #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
       !is_probe_point ? z_stepper_align_stepper_pos :
     #endif
-    z_stepper_align_pos
+    z_stepper_align_xy
   );
 
   if (!is_probe_point
