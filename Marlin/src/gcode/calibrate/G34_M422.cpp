@@ -89,15 +89,12 @@
 #endif
 
 #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-  constexpr float test_z_stepper_align_stepper_xy[][XY] = Z_STEPPER_ALIGN_STEPPER_XY;
+  constexpr xy_pos_t test_z_stepper_align_stepper_xy[] = Z_STEPPER_ALIGN_STEPPER_XY;
   static_assert(
     COUNT(test_z_stepper_align_stepper_xy) == Z_STEPPER_COUNT,
     "Z_STEPPER_ALIGN_STEPPER_XY requires three {X,Y} entries (one per Z stepper)."
   );
-#endif
-
-#if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-  static xy_pos_t z_stepper_align_stepper_pos[] = Z_STEPPER_ALIGN_STEPPER_XY;
+  static xy_pos_t z_stepper_align_stepper_xy[] = Z_STEPPER_ALIGN_STEPPER_XY;
 #endif
 
 #define G34_PROBE_COUNT COUNT(z_stepper_align_xy)
@@ -308,7 +305,7 @@ void GcodeSuite::G34() {
 
         z_measured_min = 100000.0f;
         for (uint8_t i = 0; i < Z_STEPPER_COUNT; ++i) {
-          z_measured[i] = -(lfd.A * z_stepper_align_stepper_pos[i].x + lfd.B * z_stepper_align_stepper_pos[i].y);
+          z_measured[i] = -(lfd.A * z_stepper_align_stepper_xy[i].x + lfd.B * z_stepper_align_stepper_xy[i].y);
           z_measured_min = _MIN(z_measured_min, z_measured[i]);
         }
 
@@ -469,7 +466,7 @@ void GcodeSuite::M422() {
       SERIAL_ECHOLNPAIR_P(PSTR("M422 S"), i + 1, SP_X_STR, z_stepper_align_xy[i].x, SP_Y_STR, z_stepper_align_xy[i].y);
     #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
       for (uint8_t i = 0; i < Z_STEPPER_COUNT; ++i)
-        SERIAL_ECHOLNPAIR_P(PSTR("M422 W"), i + 1, SP_X_STR, z_stepper_align_stepper_pos[i].x, SP_Y_STR, z_stepper_align_stepper_pos[i].y);
+        SERIAL_ECHOLNPAIR_P(PSTR("M422 W"), i + 1, SP_X_STR, z_stepper_align_stepper_xy[i].x, SP_Y_STR, z_stepper_align_stepper_xy[i].y);
     #endif
     return;
   }
@@ -485,7 +482,7 @@ void GcodeSuite::M422() {
 
   xy_pos_t *pos_dest = (
     #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-      !is_probe_point ? z_stepper_align_stepper_pos :
+      !is_probe_point ? z_stepper_align_stepper_xy :
     #endif
     z_stepper_align_xy
   );
