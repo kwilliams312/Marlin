@@ -45,80 +45,54 @@
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../../core/debug_out.h"
 
-//
-// Sanity check G34 / M422 settings
-//
-constexpr xy_pos_t test_z_stepper_align_xy[] = Z_STEPPER_ALIGN_XY;
 
-#if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+#if defined(Z_STEPPER_ALIGN_XY)
+  //
+  // Sanity check G34 / M422 settings
+  //
+  constexpr xy_pos_t test_z_stepper_align_xy[] = Z_STEPPER_ALIGN_XY;
 
-  static_assert(COUNT(test_z_stepper_align_xy) >= Z_STEPPER_COUNT,
-    "Z_STEPPER_ALIGN_XY requires at least three {X,Y} entries (Z, Z2, Z3, ...)."
-  );
+  #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
 
-  constexpr float test_z_stepper_align_stepper_xy[][XY] = Z_STEPPER_ALIGN_STEPPER_XY;
-  static_assert(
-    COUNT(test_z_stepper_align_stepper_xy) == Z_STEPPER_COUNT,
-    "Z_STEPPER_ALIGN_STEPPER_XY requires three {X,Y} entries (one per Z stepper)."
-  );
+    static_assert(COUNT(test_z_stepper_align_xy) >= Z_STEPPER_COUNT,
+      "Z_STEPPER_ALIGN_XY requires at least three {X,Y} entries (Z, Z2, Z3, ...)."
+    );
 
-#else
+    constexpr float test_z_stepper_align_stepper_xy[][XY] = Z_STEPPER_ALIGN_STEPPER_XY;
+    static_assert(
+      COUNT(test_z_stepper_align_stepper_xy) == Z_STEPPER_COUNT,
+      "Z_STEPPER_ALIGN_STEPPER_XY requires three {X,Y} entries (one per Z stepper)."
+    );
 
-  static_assert(COUNT(test_z_stepper_align_xy) == Z_STEPPER_COUNT,
-    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-      "Z_STEPPER_ALIGN_XY requires three {X,Y} entries (Z, Z2, and Z3)."
-    #else
-      "Z_STEPPER_ALIGN_XY requires two {X,Y} entries (Z and Z2)."
-    #endif
-  );
-
-#endif
-
-constexpr xyz_pos_t dpo = NOZZLE_TO_PROBE_OFFSET;
-
-#define LTEST(N) (test_z_stepper_align_xy[N].x >= _MAX(X_MIN_BED + MIN_PROBE_EDGE_LEFT,  X_MIN_POS + dpo.x) - 0.00001f)
-#define RTEST(N) (test_z_stepper_align_xy[N].x <= _MIN(X_MAX_BED - MIN_PROBE_EDGE_RIGHT, X_MAX_POS + dpo.x) + 0.00001f)
-#define FTEST(N) (test_z_stepper_align_xy[N].y >= _MAX(Y_MIN_BED + MIN_PROBE_EDGE_FRONT, Y_MIN_POS + dpo.y) - 0.00001f)
-#define BTEST(N) (test_z_stepper_align_xy[N].y <= _MIN(Y_MAX_BED - MIN_PROBE_EDGE_BACK,  Y_MAX_POS + dpo.y) + 0.00001f)
-
-static_assert(LTEST(0) && RTEST(0), "The 1st Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
-static_assert(FTEST(0) && BTEST(0), "The 1st Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
-static_assert(LTEST(1) && RTEST(1), "The 2nd Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
-static_assert(FTEST(1) && BTEST(1), "The 2nd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
-
-#if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-  static_assert(LTEST(2) && RTEST(2), "The 3rd Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
-  static_assert(FTEST(2) && BTEST(2), "The 3rd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
-#endif
-
-//
-// G34 / M422 shared data
-//
-static xy_pos_t z_stepper_align_pos[] =
-#if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-  Z_STEPPER_ALIGN_XY
-#else
-  #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
-    #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
-      #if Z_STEPPER_ALIGN_ROTATE == 1
-        {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
-      #elif Z_STEPPER_ALIGN_ROTATE == 2
-        {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
-      #elif Z_STEPPER_ALIGN_ROTATE == 3
-        {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
-      #endif
-    #else
-      {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
-    #endif
   #else
-    #if defined(Z_STEPPER_ALIGN_ROTATE)
-      {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
-    #else
-      {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
-    #endif
+
+    static_assert(COUNT(test_z_stepper_align_xy) == Z_STEPPER_COUNT,
+      #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+        "Z_STEPPER_ALIGN_XY requires three {X,Y} entries (Z, Z2, and Z3)."
+      #else
+        "Z_STEPPER_ALIGN_XY requires two {X,Y} entries (Z and Z2)."
+      #endif
+    );
+
+  #endif
+
+  constexpr xyz_pos_t dpo = NOZZLE_TO_PROBE_OFFSET;
+
+  #define LTEST(N) (test_z_stepper_align_xy[N].x >= _MAX(X_MIN_BED + MIN_PROBE_EDGE_LEFT,  X_MIN_POS + dpo.x) - 0.00001f)
+  #define RTEST(N) (test_z_stepper_align_xy[N].x <= _MIN(X_MAX_BED - MIN_PROBE_EDGE_RIGHT, X_MAX_POS + dpo.x) + 0.00001f)
+  #define FTEST(N) (test_z_stepper_align_xy[N].y >= _MAX(Y_MIN_BED + MIN_PROBE_EDGE_FRONT, Y_MIN_POS + dpo.y) - 0.00001f)
+  #define BTEST(N) (test_z_stepper_align_xy[N].y <= _MIN(Y_MAX_BED - MIN_PROBE_EDGE_BACK,  Y_MAX_POS + dpo.y) + 0.00001f)
+
+  static_assert(LTEST(0) && RTEST(0), "The 1st Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
+  static_assert(FTEST(0) && BTEST(0), "The 1st Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
+  static_assert(LTEST(1) && RTEST(1), "The 2nd Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
+  static_assert(FTEST(1) && BTEST(1), "The 2nd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
+
+  #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+    static_assert(LTEST(2) && RTEST(2), "The 3rd Z_STEPPER_ALIGN_XY X is unreachable with the default probe X offset.");
+    static_assert(FTEST(2) && BTEST(2), "The 3rd Z_STEPPER_ALIGN_XY Y is unreachable with the default probe Y offset.");
   #endif
 #endif
-;
 
 #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
   static xy_pos_t z_stepper_align_stepper_pos[] = Z_STEPPER_ALIGN_STEPPER_XY;
@@ -146,6 +120,32 @@ void GcodeSuite::G34() {
     DEBUG_ECHOLNPGM(">>> G34");
     log_machine_info();
   }
+
+  xy_pos_t z_stepper_align_pos[] =
+  #if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+    Z_STEPPER_ALIGN_XY
+  #else
+    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+      #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
+        #if Z_STEPPER_ALIGN_ROTATE == 1
+          {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
+        #elif Z_STEPPER_ALIGN_ROTATE == 2
+          {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
+        #elif Z_STEPPER_ALIGN_ROTATE == 3
+          {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
+        #endif
+      #else
+        {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
+      #endif
+    #else
+      #if defined(Z_STEPPER_ALIGN_ROTATE)
+        {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
+      #else
+        {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
+      #endif
+    #endif
+  #endif
+  ;
 
   do { // break out on error
 
@@ -253,6 +253,9 @@ void GcodeSuite::G34() {
         // Safe clearance even on an incline
         if (iteration == 0 || i > 0) do_blocking_move_to_z(z_probe);
 
+        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probing X ", z_stepper_align_pos[iprobe].x);
+        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probing Y ", z_stepper_align_pos[iprobe].y);
+
         // Probe a Z height for each stepper.
         const float z_probed_height = probe_at_point(z_stepper_align_pos[iprobe], raise_after, 0, true);
         if (isnan(z_probed_height)) {
@@ -323,7 +326,7 @@ void GcodeSuite::G34() {
       // Correct the individual stepper offsets
       for (uint8_t zstepper = 0; zstepper < Z_STEPPER_COUNT; ++zstepper) {
         // Calculate current stepper move
-        const float z_align_move = z_measured[zstepper] - z_measured_min,
+        float z_align_move = z_measured[zstepper] - z_measured_min,
                     z_align_abs = ABS(z_align_move);
 
         #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
@@ -424,6 +427,32 @@ void GcodeSuite::G34() {
  *   Y<pos>   : Y position to set (Unchanged if omitted)
  */
 void GcodeSuite::M422() {
+  xy_pos_t z_stepper_align_pos[] =
+  #if defined(Z_STEPPER_ALIGN_XY) || ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+    Z_STEPPER_ALIGN_XY
+  #else
+    #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+      #if defined(Z_STEPPER_ALIGN_ROTATE) && Z_STEPPER_ALIGN_ROTATE != 0
+        #if Z_STEPPER_ALIGN_ROTATE == 1
+          {{ probe_min_x(), probe_min_y() }, { probe_min_x(), probe_max_y() }, { probe_max_x(), Y_CENTER }}
+        #elif Z_STEPPER_ALIGN_ROTATE == 2
+          {{ probe_min_x(), probe_max_y() }, { probe_max_x(), probe_max_y() }, { X_CENTER, probe_min_y() }}
+        #elif Z_STEPPER_ALIGN_ROTATE == 3
+          {{ probe_max_x(), probe_min_y() }, { probe_max_x(), probe_max_y() }, { probe_min_x(), Y_CENTER }}
+        #endif
+      #else
+        {{ probe_min_x(), probe_min_y() }, { probe_max_x(), probe_min_y() }, { X_CENTER, probe_max_y() }}
+      #endif
+    #else
+      #if defined(Z_STEPPER_ALIGN_ROTATE)
+        {{ X_CENTER, probe_min_y() }, { Y_CENTER, probe_max_y() }}
+      #else
+        {{ probe_min_x(), Y_CENTER }, { probe_max_x(), Y_CENTER }}
+      #endif
+    #endif
+  #endif
+  ;
+
   if (!parser.seen_any()) {
     for (uint8_t i = 0; i < G34_PROBE_COUNT; ++i)
       SERIAL_ECHOLNPAIR_P(PSTR("M422 S"), i + 1, SP_X_STR, z_stepper_align_pos[i].x, SP_Y_STR, z_stepper_align_pos[i].y);
