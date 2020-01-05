@@ -56,8 +56,6 @@
   #include "../feature/backlash.h"
 #endif
 
-xyz_pos_t probe_offset; // Initialized by settings.load()
-
 #if ENABLED(BLTOUCH)
   #include "../feature/bltouch.h"
 #endif
@@ -85,6 +83,14 @@ xyz_pos_t probe_offset; // Initialized by settings.load()
 
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../core/debug_out.h"
+
+
+xyz_pos_t probe_offset; // Initialized by settings.load()
+
+#if HAS_PROBE_XY_OFFSET
+  xyz_pos_t &probe_offset_xy = probe_offset;
+#endif
+
 
 #if ENABLED(Z_PROBE_SLED)
 
@@ -701,7 +707,7 @@ float probe_at_point(const float &rx, const float &ry, const ProbePtRaise raise_
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Position Not Reachable");
       return NAN;  // The given position is in terms of the probe
     }
-    npos -= probe_offset;                                   // Get the nozzle position
+    npos -= probe_offset_xy;                                   // Get the nozzle position
   }
   else if (!position_is_reachable(npos)) return NAN;        // The given position is in terms of the nozzle
 
