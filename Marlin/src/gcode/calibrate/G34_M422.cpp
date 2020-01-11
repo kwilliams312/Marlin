@@ -225,17 +225,17 @@ void GcodeSuite::G34() {
     // Move the Z coordinate realm towards the positive - dirty trick
     current_position.z -= z_probe * 0.5f;
 
-    float last_z_align_move[Z_STEPPER_COUNT] = ARRAY_N(Z_STEPPER_COUNT, 10000.0f, 10000.0f, 10000.0f),
-          z_measured[G34_PROBE_COUNT] = { 0 },
+    float z_measured[G34_PROBE_COUNT] = { 0 },
           z_maxdiff = 0.0f,
           amplification = z_auto_align_amplification;
 
     uint8_t iteration;
     bool err_break = false;
 
-    #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-      bool adjustment_reverse = false;
+    #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
+      bool adjustment_reversed = false;
     #endif
+    float last_iteration_error = 0.0f;
 
     for (iteration = 0; iteration < z_auto_align_iterations; ++iteration) {
       if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> probing all positions.");
@@ -312,47 +312,55 @@ void GcodeSuite::G34() {
         SERIAL_ECHOLNPAIR("CALCULATED STEPPER POSITIONS: Z1=", z_measured[0], " Z2=", z_measured[1], " Z3=", z_measured[2]);
       #endif
 
+      // The following correction actions are to be enabled for select Z-steppers only
+      stepper.set_separate_multi_axis(true);
+
+      float calculated_align_move[Z_STEPPER_COUNT];
+      float current_iteration_error = 0.0;
+
+      bool success_break = true;
+      for (uint8_t zstepper = 0; zstepper < Z_STEPPER_COUNT; ++zstepper) {
+        // Calculate current stepper move
+        calculated_align_move[zstepper] = z_measured[zstepper] - z_measured_min;
+        current_iteration_error += calculated_align_move[zstepper];
+        // Stop early if all measured points achieve accuracy target
+        if (calculated_align_move[zstepper] > z_auto_align_accuracy) success_break = false;
+      }
+      
       SERIAL_ECHOLNPAIR("\n"
         "DIFFERENCE Z1-Z2=", ABS(z_measured[0] - z_measured[1])
         #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
           , " Z2-Z3=", ABS(z_measured[1] - z_measured[2])
           , " Z3-Z1=", ABS(z_measured[2] - z_measured[0])
         #endif
+        , " SUM=", current_iteration_error
       );
 
-      // The following correction actions are to be enabled for select Z-steppers only
-      stepper.set_separate_multi_axis(true);
-
-      bool success_break = true;
-      // Correct the individual stepper offsets
-      for (uint8_t zstepper = 0; zstepper < Z_STEPPER_COUNT; ++zstepper) {
-        // Calculate current stepper move
-        float z_align_move = z_measured[zstepper] - z_measured_min,
-                    z_align_abs = ABS(z_align_move);
-
-        #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-          // Optimize one iteration's correction based on the first measurements
-          if (z_align_abs > 0.0f) amplification = iteration == 1 ? _MIN(last_z_align_move[zstepper] / z_align_abs, 2.0f) : z_auto_align_amplification;
-        #endif
-
-        // Check for less accuracy compared to last move
-        if (last_z_align_move[zstepper] < z_align_abs - z_auto_align_accuracy) {
-          SERIAL_ECHOLNPGM("Decreasing accuracy detected.");
-          #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-            adjustment_reverse = !adjustment_reverse;
+      if (iteration > 0 && current_iteration_error > last_iteration_error) {
+        SERIAL_ECHOLNPGM("Decreasing accuracy detected.");
+          #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
+            if (adjustment_reversed) {
+              SERIAL_ECHOLNPGM("Decreasing accuracy detected. Reversal already attempted. Aborting.");
+              err_break = true;
+              break;
+            }
+            // Reverse direction by reversing the order of alignment points.
+            // For this iteration switch the calculated moves. Do not reverse the
+            // direction of the moves to avoid possibly crashing the nozzle into the bed.
+            SERIAL_ECHOLNPGM("Decreasing accuracy detected. Reversing correction direction.");
+            z_stepper_align_xy[0].swap(z_stepper_align_xy[1]);
+            SWAP(calculated_align_move[0], calculated_align_move[1]);
+            adjustment_reversed = true;
           #else
             err_break = true;
             break;
           #endif
-        }
+      }
+      last_iteration_error = current_iteration_error;
 
-        // Remember the alignment for the next iteration
-        last_z_align_move[zstepper] = z_align_abs;
-
-        // Stop early if all measured points achieve accuracy target
-        if (z_align_abs > z_auto_align_accuracy) success_break = false;
-
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("> Z", int(zstepper + 1), " corrected by ", z_align_move);
+      // Correct the individual stepper offsets
+      for (uint8_t zstepper = 0; zstepper < Z_STEPPER_COUNT; ++zstepper) {
+        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("> Z", int(zstepper + 1), " corrected by ", calculated_align_move[zstepper]);
 
         // Lock all steppers except one
         set_all_z_lock(true);
@@ -364,15 +372,8 @@ void GcodeSuite::G34() {
           #endif
         }
 
-        #if DISABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
-          // Decreasing accuracy was detected so move was inverted.
-          // Will match reversed Z steppers on dual steppers. Triple will need more work to map.
-          if (adjustment_reverse)
-            z_align_move = -z_align_move;
-        #endif
-
         // Do a move to correct part of the misalignment for the current stepper
-        do_blocking_move_to_z(amplification * z_align_move + current_position.z);
+        do_blocking_move_to_z(amplification * calculated_align_move[zstepper] + current_position.z);
       } // for (zstepper)
 
       // Back to normal stepper operations
