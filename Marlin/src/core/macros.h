@@ -446,3 +446,5 @@
 // Repeat a macro passing 0...N-1 plus additional arguments.
 #define REPEAT2_S(S,N,OP,V...)  EVAL(_REPEAT2(S,SUB##S(N),OP,V))
 #define REPEAT2(N,OP,V...)      REPEAT2_S(0,N,OP,V)
+
+#define SWAP(x, y) do { typeof(x) SWAP = x; x = y; y = SWAP; } while (0)

@@ -120,7 +120,7 @@ void GcodeSuite::G34() {
     log_machine_info();
   }
 
-  const xy_pos_t z_stepper_align_xy[] =
+  xy_pos_t z_stepper_align_xy[] =
     #ifdef Z_STEPPER_ALIGN_XY
       Z_STEPPER_ALIGN_XY
     #else
@@ -326,7 +326,7 @@ void GcodeSuite::G34() {
         // Stop early if all measured points achieve accuracy target
         if (calculated_align_move[zstepper] > z_auto_align_accuracy) success_break = false;
       }
-      
+
       SERIAL_ECHOLNPAIR("\n"
         "DIFFERENCE Z1-Z2=", ABS(z_measured[0] - z_measured[1])
         #if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
@@ -348,7 +348,8 @@ void GcodeSuite::G34() {
             // For this iteration switch the calculated moves. Do not reverse the
             // direction of the moves to avoid possibly crashing the nozzle into the bed.
             SERIAL_ECHOLNPGM("Decreasing accuracy detected. Reversing correction direction.");
-            z_stepper_align_xy[0].swap(z_stepper_align_xy[1]);
+            SWAP(z_stepper_align_xy[0].x, z_stepper_align_xy[1].x);
+            SWAP(z_stepper_align_xy[0].y, z_stepper_align_xy[1].y);
             SWAP(calculated_align_move[0], calculated_align_move[1]);
             adjustment_reversed = true;
           #else

@@ -192,7 +192,6 @@ struct XYval {
   FI void set(const T px)                               { x = px; }
   FI void set(const T px, const T py)                   { x = px; y = py; }
   FI void reset()                                       { x = y = 0; }
-  FI void swap(const XYval<T>& val)                     { SWAP(x, val.x); SWAP(y, val.y); }
   FI T magnitude()                                const { return (T)sqrtf(x*x + y*y); }
   FI operator T* ()                                     { return pos; }
   FI operator bool()                                    { return x || y; }
